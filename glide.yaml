@@ -1,0 +1,14 @@
+package: github.com/mongodb/greenbay
+import:
+- package: github.com/urfave/cli
+  version: ^1.17.0
+- package: github.com/mongodb/amboy
+- package: github.com/tychoish/grip
+- package: github.com/stretchr/testify
+- package: github.com/stretchr/objx
+- package: github.com/pmezard/go-difflib
+- package: github.com/davecgh/go-spew
+- package: github.com/satori/go.uuid
+- package: github.com/pkg/errors
+- package: golang.org/x/net
+- package: gopkg.in/yaml.v2
