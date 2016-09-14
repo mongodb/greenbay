@@ -1,0 +1,244 @@
+#######################################
+#         YAML Templates              #
+#######################################
+variables:
+  - &run-build
+    # runs a build operations. The task name in evergreen should
+    # correspond to a make target for the build operation.
+    name: test
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/greenbay
+      - func: run-make
+        vars: { target: "${task_name}" }
+  - &run-go-test-suite
+    # runs a make target and then uploads gotest output to
+    # evergreen. The test name should correspond to a make target for
+    # that suite
+    name: test
+    depends_on:
+      - name: build
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/greenbay
+      - func: run-make
+        vars: { target: "${task_name}" }
+
+  # Task lists for build variants. Some (known) duplication between
+  # these lists and the task definitions below.
+  - &test-tasks
+      # this should be build+all test suite names. to add a new test you
+      # must additionally add the test suite name to the dev-tasks list
+      # bellow and the task list, using the run-go-suite template
+      - name: build
+      - name: test-greenbay
+      - name: test-main
+      - name: test-operations
+      - name: push
+  - &dev-tasks
+      # dev tasks contains all the test suites plus coverage and
+      # linting, and the race detector this is a special builder.
+      - name: build
+      - name: lint
+      - name: test-greenbay
+      - name: test-main
+      - name: test-operations
+      - name: coverage
+      - name: push
+  - &race-detector-tasks
+      - name: build-race
+      - name: race-greenbay
+      - name: race-main
+      - name: race-operations
+
+
+#######################################
+#              Functions              #
+#######################################
+functions:
+  run-make:
+    command: shell.exec
+    params:
+       script: |
+         set -o errexit
+         set -o verbose
+
+         # Configure a local go path for this build.
+         export GOPATH=`pwd`/gopath
+
+         cd gopath/src/github.com/mongodb/greenbay
+
+         # Run make, called with proper environment variables set,
+         # running the target.
+         ${build_env} make vendor ${target}
+  upload-coverage:
+    command: s3.put
+    params:
+      aws_key: ${aws_key}
+      aws_secret: ${aws_secret}
+      local_file: gopath/src/github.com/mongodb/greenbay/build/coverage.${name}.html
+      remote_file: greenbay/${task_id}/${name}-coverage.html
+      bucket: mciuploads
+      content_type: text/html
+      permissions: public-read
+      display_name: coverage-${name}
+  upload-dist:
+    command: s3.put
+    params:
+      aws_key: ${aws_key}
+      aws_secret: ${aws_secret}
+      local_file: gopath/src/github.com/mongodb/greenbay/build/dist.tar.gz
+      remote_file: greenbay/${build_id}-${build_variant}/greenbay-dist-${revision}.tar.gz
+      bucket: mciuploads
+      content_type: application/x-gzip
+      permissions: public-read
+      display_name: greenbay-dist.tar.gz
+
+
+#######################################
+#                Tasks                #
+#######################################
+tasks:
+  # the build (with and without the race detector) and lint tasks use
+  # a template that does not include test result parsing.
+  - name: build
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/greenbay
+      - func: run-make
+        vars: { target: "build dist" }
+      - func: upload-dist
+  - <<: *run-build
+    name: build-race
+  - <<: *run-build
+    name: lint
+
+  # The coverage task is less generic.
+  - name: coverage
+    depends_on:
+      - name: build
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/greenbay
+      - func: run-make
+        vars: { target: "coverage-html"}
+      - func: upload-coverage
+        vars: { name: "main"}
+      - func: upload-coverage
+        vars: { name: "operations"}
+      - func: upload-coverage
+        vars: { name: "greenbay"}
+
+  # define tasks for all test suites (modules)
+  - <<: *run-go-test-suite
+    name: test-operations
+  - <<: *run-go-test-suite
+    name: test-main
+  - <<: *run-go-test-suite
+    name: test-greenbay
+
+  # run the suites with the race detector (one variant only)
+  - <<: *run-go-test-suite
+    name: race-operations
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-main
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-greenbay
+    depends_on:
+      - name: build-race
+
+  - name: push
+    patchable: false
+    depends_on:
+    - name: "*"
+    stepback: false
+    commands:
+      - command: s3Copy.copy
+        params:
+          aws_key: ${aws_key}
+          aws_secret: ${aws_secret}
+          s3_copy_files:
+          - {'source': { 'path': 'greenbay/${build_id}-${build_variant}/greenbay-dist-${revision}.tar.gz', 'bucket': 'mciuploads' },
+             'destination': { 'path': 'build/greenbay/curator-dist-${build_variant}-${revision}.tar.gz', 'bucket': 'boxes.10gen.com' }
+            }
+
+
+post:
+  - command: gotest.parse_files
+    params:
+      files:
+        - "gopath/src/github.com/mongodb/greenbay/build/test.*.out"
+        - "gopath/src/github.com/mongodb/greenbay/build/race.*.out"
+  - command: shell.exec
+    params:
+      script: |
+        rm -rf greenbay
+
+#######################################
+#           Buildvariants             #
+#######################################
+buildvariants:
+  - name: archlinux
+    display_name: Arch Linux
+    run_on:
+      - archlinux-test
+    tasks:
+      *dev-tasks
+
+  - name: race-detector
+    display_name: Race Detector (Arch Linux)
+    run_on:
+      - archlinux-test
+    tasks:
+      *race-detector-tasks
+
+  - name: rhel70
+    display_name: RHEL 7.0
+    expansions:
+      build_env: "PATH=/opt/go:$PATH"
+    run_on:
+      - rhel70
+    tasks:
+      *test-tasks
+
+  - name: rhel62
+    display_name: RHEL 6.2
+    run_on:
+      - rhel62-test
+    tasks:
+      *test-tasks
+
+  - name: rhel55
+    display_name: RHEL 5.5 (gccgo)
+    expansions:
+      build_env: "LD_LIBRARY_PATH=/opt/openssl/lib64 PATH=/opt/mongodbtoolchain/v2/bin:$PATH"
+    run_on:
+      - rhel55-test
+    tasks:
+      *test-tasks
+
+  - name: debian81
+    display_name: Debian 8.1
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+    run_on:
+      - debian81-test
+    tasks:
+      *test-tasks
+
+  - name: osx
+    display_name: OS X 10.10
+    expansions:
+      build_env: "PATH=/usr/local/go/bin:$PATH"
+    run_on:
+      - osx-1010
+    tasks:
+      *test-tasks
