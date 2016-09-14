@@ -167,7 +167,7 @@ tasks:
           aws_secret: ${aws_secret}
           s3_copy_files:
           - {'source': { 'path': 'greenbay/${build_id}-${build_variant}/greenbay-dist-${revision}.tar.gz', 'bucket': 'mciuploads' },
-             'destination': { 'path': 'build/greenbay/curator-dist-${build_variant}-${revision}.tar.gz', 'bucket': 'boxes.10gen.com' }
+             'destination': { 'path': 'build/greenbay/greenbay-dist-${build_variant}-${revision}.tar.gz', 'bucket': 'boxes.10gen.com' }
             }
 
 

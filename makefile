@@ -1,7 +1,7 @@
 # start project configuration
 name := greenbay
 buildDir := build
-packages := $(name) operations main
+packages := operations main
 orgPath := github.com/mongodb
 projectPath := $(orgPath)/$(name)
 # end project configuration
@@ -24,7 +24,7 @@ lintArgs += --linter='misspell:misspell ./*.go:PATH:LINE:COL:MESSAGE' --enable=m
 lintArgs += --line-length=100 --dupl-threshold=100 --cyclo-over=15
 #   the gotype linter has an imperfect compilation simulator and
 #   produces the following false postive errors:
-lintArgs += --exclude="error: could not import github.com/mongodb/curator"
+lintArgs += --exclude="error: could not import github.com/mongodb/greenbay"
 #   go lint warns on an error in docstring format, erroneously because
 #   it doesn't consider the entire package.
 lintArgs += --exclude="warning: package comment should be of the form \"Package .* ...\""
