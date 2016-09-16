@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/mongodb/greenbay/operations"
+	"github.com/pkg/errors"
 	"github.com/tychoish/grip"
 	"github.com/urfave/cli"
 )
@@ -42,7 +43,7 @@ func buildApp() *cli.App {
 	}
 
 	app.Before = func(c *cli.Context) error {
-		return loggingSetup(app.Name, c.String("level"))
+		return errors.Wrap(loggingSetup(app.Name, c.String("level")))
 	}
 
 	return app
@@ -61,5 +62,5 @@ func loggingSetup(name, level string) error {
 	// messages directly to systemd's journald logger,
 	// grip.UseFileLogger(<filename>), to write log messages to a
 	// file, among other possible logging backends.
-	return grip.UseNativeLogger()
+	return errors.Wrap(grip.UseNativeLogger(), "issue setting logging backend.")
 }
