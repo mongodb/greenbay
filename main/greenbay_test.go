@@ -1,12 +1,14 @@
 package main
 
 import (
+	"flag"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/tychoish/grip"
 	"github.com/tychoish/grip/level"
 	"github.com/tychoish/grip/send"
+	"github.com/urfave/cli"
 )
 
 // MainSuite is a collection of tests that exercise the main() of the
@@ -59,4 +61,15 @@ func (s *MainSuite) TestAppBuilderFunctionSetsCorrectProperties() {
 
 	// we do logging set up here, so it needs to be set
 	s.NotZero(app.Before)
+
+	s.NoError(app.Before(cli.NewContext(app, &flag.FlagSet{}, nil)))
+}
+
+func (s *MainSuite) TestChecksActionFunctionReturnsErrorWithoutArguments() {
+	cmd := checks()
+	ctx := cli.NewContext(buildApp(), &flag.FlagSet{}, nil)
+	checkFunc, ok := cmd.Action.(func(c *cli.Context) error)
+	s.True(ok)
+	err := checkFunc(ctx)
+	s.Error(err)
 }
