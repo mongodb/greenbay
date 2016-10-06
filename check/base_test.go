@@ -44,7 +44,7 @@ func (s *BaseCheckSuite) TestAddErrorWithNilObjectDoesNotChangeErrorState() {
 	}
 }
 
-func (s *BaseCheckSuite) TestAddErrorsPersisstsErrorsInJob() {
+func (s *BaseCheckSuite) TestAddErrorsPersistsErrorsInJob() {
 	for i := 1; i <= 100; i++ {
 		s.base.addError(errors.New("foo"))
 		s.Error(s.base.Error())
@@ -67,7 +67,7 @@ func (s *BaseCheckSuite) TestDependencyAccessorIsCorrect() {
 	s.Equal(dependency.AlwaysRun, s.base.Dependency().Type().Name)
 }
 
-func (s *BaseCheckSuite) TestSetDependencyAccepstAndPerisstsChangesToDependencyType() {
+func (s *BaseCheckSuite) TestSetDependencyAccepstAndPersistsChangesToDependencyType() {
 	s.Equal(dependency.AlwaysRun, s.base.dep.Type().Name)
 	localDep := dependency.NewLocalFileInstance()
 	s.NotEqual(localDep.Type().Name, dependency.AlwaysRun)
@@ -155,7 +155,7 @@ func (s *BaseCheckSuite) TestSetMessageConvertsTypesToString() {
 	s.Equal(strings.Join(strs, "\n"), s.base.Message)
 }
 
-func (s *BaseCheckSuite) TestSetSuitesOverriedsExistingSuites() {
+func (s *BaseCheckSuite) TestSetSuitesOverridesExistingSuites() {
 	cases := [][]string{
 		[]string{},
 		[]string{"foo", "bar"},
@@ -169,7 +169,7 @@ func (s *BaseCheckSuite) TestSetSuitesOverriedsExistingSuites() {
 	}
 }
 
-func (s *BaseCheckSuite) TestRoutTripAbilityThroughImportAndExport() {
+func (s *BaseCheckSuite) TestRoundTripAbilityThroughImportAndExport() {
 	s.base.JobType = amboy.JobType{
 		Format:  amboy.JSON,
 		Version: 42,
