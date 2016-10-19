@@ -1,0 +1,335 @@
+#######################################
+#         YAML Templates              #
+#######################################
+variables:
+  - &run-build
+    # runs a build operations. The task name in evergreen should
+    # correspond to a make target for the build operation.
+    name: test
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/amboy
+      - func: run-make
+        vars: { target: "${task_name}" }
+  - &run-go-test-suite
+    # runs a make target and then uploads gotest output to
+    # evergreen. The test name should correspond to a make target for
+    # that suite
+    name: test
+    depends_on:
+      - name: build
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/amboy
+      - func: setup-credentials
+      - func: run-make
+        vars: { target: "${task_name}" }
+  - &run-go-test-suite-with-mongodb
+    # runs a make target above, but only on systems that have a
+    # running mongod started for testing.
+    name: test
+    depends_on:
+      - name: build
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/amboy
+      - func: setup-credentials
+      - func: set-up-mongodb
+      - func: run-make
+        vars: { target: "${task_name}" }
+
+  # Task lists for build variants. Some (known) duplication between
+  # these lists and the task definitions below.
+  - &test-tasks
+      # this should be build+all test suite names. to add a new test you
+      # must additionally add the test suite name to the dev-tasks list
+      # bellow and the task list, using the run-go-suite template
+      - name: build
+      - name: test-dependency
+      - name: test-job
+      - name: test-registry
+      - name: test-pool
+      - name: test-queue
+      - name: test-queue-driver
+      - name: test-rest
+  - &dev-tasks
+      # dev tasks contains all the test suites plus coverage and
+      # linting. Only need/want to run lint/coverage on one builder.
+      - name: build
+      - name: lint
+      - name: test-dependency
+      - name: test-job
+      - name: test-registry
+      - name: test-pool
+      - name: test-queue
+      - name: test-queue-driver
+      - test: test-rest
+      - name: coverage
+  - &race-detector-tasks
+      - name: build-race
+      - name: race-dependency
+      - name: race-job
+      - name: race-registry
+      - name: race-pool
+      - name: race-queue
+      - name: race-queue-driver
+      - name: race-rest
+
+
+#######################################
+#              Functions              #
+#######################################
+functions:
+  setup-credentials:
+    command: shell.exec
+    params:
+       silent: true
+       script: |
+         mkdir ~/.aws
+
+         cat <<EOF > ~/.aws/config
+         [default]
+         region = us-east-1
+         EOF
+
+         cat <<EOF > ~/.aws/credentials
+         [default]
+         aws_access_key_id = ${aws_key}
+         aws_secret_access_key = ${aws_secret}
+         EOF
+  run-make:
+    command: shell.exec
+    params:
+       script: |
+         set -o errexit
+         set -o verbose
+
+         # Configure a local go path for this build.
+         export GOPATH=`pwd`/gopath
+
+         cd gopath/src/github.com/mongodb/amboy
+
+         # Run make, called with proper environment variables set,
+         # running the target.
+         ${build_env} make vendor ${target}
+  upload-coverage:
+    command: s3.put
+    params:
+      aws_key: ${aws_key}
+      aws_secret: ${aws_secret}
+      local_file: gopath/src/github.com/mongodb/amboy/build/coverage.${name}.html
+      remote_file: amboy/${task_id}b/${name}-coverage.html
+      bucket: mciuploads
+      content_type: text/html
+      permissions: public-read
+      display_name: coverage-${name}
+  set-up-mongodb:
+    # TODO replace this configuration with something more robust.
+    # Current version is borrowed directly rom the Evergreen self tests.
+    - command: shell.exec
+      params:
+        script: |
+          set -o errexit
+
+          rm -rf mongodb
+          mkdir mongodb
+          cd mongodb
+          curl ${mongodb_url} -o mongodb.tgz
+
+          tar -zxvf mongodb.tgz
+          chmod +x ./mongodb-*/bin/*
+          mv ./mongodb-*/bin/* .
+          rm -rf db_files
+          rm -rf db_logs
+          mkdir db_files
+          mkdir db_logs
+    - command: shell.exec
+      params:
+        background: true
+        script: |
+          set -o verbose
+          cd mongodb
+          echo "starting mongod..."
+          ./mongod --dbpath ./db_files &
+          echo "waiting for mongod to start up"
+    - command: shell.exec
+      params:
+        script: |
+          cd mongodb
+          ./mongo${extension|} --nodb --eval 'assert.soon(function(x){try{var d = new Mongo("localhost:27017"); return true}catch(e){return false}}, "timed out connecting")'
+          echo "mongod is up."
+
+
+#######################################
+#                Tasks                #
+#######################################
+tasks:
+  # the build (with and without the race detector) and lint tasks use
+  # a template that does not include test result parsing.
+  - <<: *run-build
+    name: build
+  - <<: *run-build
+    name: build-race
+  - <<: *run-build
+    name: lint
+
+  # The coverage task is less generic.
+  - name: coverage
+    depends_on:
+      - name: build
+    commands:
+      - command: git.get_project
+        params:
+          directory: gopath/src/github.com/mongodb/amboy
+      - func: setup-credentials
+      - func: set-up-mongodb
+      - func: run-make
+        vars: { target: "coverage-html"}
+      - func: upload-coverage
+        vars: { name: "dependency"}
+      - func: upload-coverage
+        vars: { name: "job"}
+      - func: upload-coverage
+        vars: { name: "registry"}
+      - func: upload-coverage
+        vars: { name: "pool"}
+      - func: upload-coverage
+        vars: { name: "queue"}
+      - func: upload-coverage
+        vars: { name: "queue-driver"}
+      - func: upload-coverage
+        vars: { name: "rest"}
+
+  # define tasks for all test suites (modules)
+  - <<: *run-go-test-suite
+    name: test-dependency
+  - <<: *run-go-test-suite
+    name: test-job
+  - <<: *run-go-test-suite
+    name: test-registry
+  - <<: *run-go-test-suite
+    name: test-pool
+  - <<: *run-go-test-suite
+    name: test-rest
+  - <<: *run-go-test-suite-with-mongodb
+    name: test-queue
+  - <<: *run-go-test-suite-with-mongodb
+    name: test-queue-driver
+
+  # run the suites with the race detector (one variant only)
+  - <<: *run-go-test-suite
+    name: race-dependency
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-job
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-rest
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-registry
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-pool
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite-with-mongodb
+    name: race-queue
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite-with-mongodb
+    name: race-queue-driver
+    depends_on:
+      - name: build-race
+
+
+post:
+  - command: gotest.parse_files
+    params:
+      files:
+        - "gopath/src/github.com/mongodb/amboy/build/test.*.out"
+        - "gopath/src/github.com/mongodb/amboy/build/race.*.out"
+  - command: shell.exec
+    params:
+      script: |
+        rm -rf amboy
+        rm -rf ~/.aws
+
+
+#######################################
+#           Buildvariants             #
+#######################################
+buildvariants:
+  - name: archlinux
+    display_name: Arch Linux (go1.6)
+    expansions:
+      mongodb_url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.9.tgz
+    run_on:
+      - archlinux-test
+    tasks:
+      *dev-tasks
+
+  - name: race-detector
+    display_name: Race Detector (Arch Linux; go1.6)
+    expansions:
+      mongodb_url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.9.tgz
+    run_on:
+      - archlinux-test
+    tasks:
+      *race-detector-tasks
+
+  - name: rhel70
+    display_name: RHEL 7.0
+    expansions:
+      mongodb_url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.2.9.tgz
+      build_env: "PATH=/opt/go:$PATH"
+    run_on:
+      - rhel70
+    tasks:
+      *test-tasks
+
+  - name: rhel62
+    display_name: RHEL 6.2
+    expansions:
+      mongodb_url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.9.tgz
+    run_on:
+      - rhel62-test
+    tasks:
+      *test-tasks
+
+  - name: rhel55
+    display_name: RHEL 5.5 (gccgo)
+    expansions:
+      mongodb_url: http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel55-3.2.9.tgz
+      build_env: "LD_LIBRARY_PATH=/opt/openssl/lib64 PATH=/opt/mongodbtoolchain/v2/bin:$PATH"
+    run_on:
+      - rhel55-test
+    tasks:
+      *test-tasks
+
+  - name: debian81
+    display_name: Debian 8.1
+    expansions:
+      mongodb_url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian81-3.2.9.tgz
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+    run_on:
+      - debian81-test
+    tasks:
+      *test-tasks
+
+  - name: osx
+    display_name: OS X 10.10
+    expansions:
+      mongodb_url: https://fastdl.mongodb.org/osx/mongodb-osx-ssl-x86_64-3.2.9.tgz
+      build_env: "PATH=/usr/local/go/bin:$PATH"
+    run_on:
+      - osx-1010
+    tasks:
+      *test-tasks

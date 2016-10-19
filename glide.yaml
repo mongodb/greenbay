@@ -3,6 +3,7 @@ import:
 - package: github.com/urfave/cli
   version: ^1.17.0
 - package: github.com/mongodb/amboy
+- package: github.com/blang/semver
 - package: github.com/tychoish/grip
 - package: github.com/stretchr/testify
 - package: github.com/stretchr/objx
