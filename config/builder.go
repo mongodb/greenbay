@@ -9,7 +9,7 @@ import (
 )
 
 // Builder provides an interface to build a GreenbayTestConfig object
-// programatically. Primarily useful in testing or potentially for
+// programmatically. Primarily useful in testing or potentially for
 // building out a greenbay-based test service.
 type Builder struct {
 	conf  GreenbayTestConfig
@@ -37,16 +37,20 @@ func NewBuilder() *Builder {
 //
 // Additionally, in most cases you'll want a
 // *pointer* to this object produced by this method.
-func (b *Builder) Conf() (GreenbayTestConfig, error) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
+func (b *Builder) Conf() (*GreenbayTestConfig, error) {
+	out := &GreenbayTestConfig{}
 
-	b.conf.reset()
-	if err := b.conf.parseTests(); err != nil {
-		return GreenbayTestConfig{}, errors.Wrap(err, "problem refreshing config builder")
+	b.mutex.Lock()
+	copy(out.RawTests, b.conf.RawTests)
+	*out.Options = *b.conf.Options
+	b.mutex.Unlock()
+
+	out.reset()
+	if err := out.parseTests(); err != nil {
+		return &GreenbayTestConfig{}, errors.Wrap(err, "problem refreshing config builder")
 	}
 
-	return b.conf, nil
+	return out, nil
 }
 
 // AddCheck takes a greenbay.Checker implementation and adds it to the

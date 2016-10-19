@@ -1,3 +1,21 @@
+/*
+Package greenbay contains the basic type definition used in the
+greenbay application.
+
+Overview
+
+The Greenbay application is a system integration testing and
+validation tool. It contains definitions of some generic test
+functions, such as "does this file exist" and "do these commands
+succeed." Specific tests are defined using these functions in a
+configuration file, and tests are run on hosts to ensure that the
+system is correctly configured.
+
+The Checker interface is a superset of the amboy.Job interface. In
+most cases, specific check implementations inculde the check.Base
+type, which contains implementations of most methods (except for
+Run()) required by this interface.
+*/
 package greenbay
 
 import (
@@ -29,7 +47,7 @@ type Checker interface {
 	// amboy.Job.Type().Name value.
 	Name() string
 
-	// Checker composes the amboy.Job interface.
+	// Checker includes the amboy.Job interface.
 	amboy.Job
 }
 

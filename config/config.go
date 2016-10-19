@@ -13,15 +13,17 @@ import (
 // GreenbayTestConfig defines the structure for a single greenbay test
 // run, including execution behavior (options) and check definitions.
 type GreenbayTestConfig struct {
-	Options struct {
-		ContineOnError bool   `bson:"continue_on_error" json:"continue_on_error" yaml:"continue_on_error"`
-		ReportFormat   string `bson:"report_format" json:"report_format" yaml:"report_format"`
-		Jobs           int    `bson:"jobs" json:"jobs" yaml:"jobs"` // number of job workers.
-	} `bson:"options" json:"options" yaml:"options"`
+	Options  *options             `bson:"options" json:"options" yaml:"options"`
 	RawTests []rawTest            `bson:"tests" json:"tests" yaml:"tests"`
 	tests    map[string]amboy.Job // maping of test names to test objects
 	suites   map[string][]string  // mapping of suite names to test names
 	mutex    sync.RWMutex
+}
+
+type options struct {
+	ContineOnError bool   `bson:"continue_on_error" json:"continue_on_error" yaml:"continue_on_error"`
+	ReportFormat   string `bson:"report_format" json:"report_format" yaml:"report_format"`
+	Jobs           int    `bson:"jobs" json:"jobs" yaml:"jobs"` // number of job workers.
 }
 
 func newTestConfig() *GreenbayTestConfig {

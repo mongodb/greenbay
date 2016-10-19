@@ -36,6 +36,9 @@ variables:
       - name: test-greenbay
       - name: test-main
       - name: test-operations
+      - name: test-config
+      - name: test-check
+      - name: test-output
       - name: push
   - &dev-tasks
       # dev tasks contains all the test suites plus coverage and
@@ -45,6 +48,9 @@ variables:
       - name: test-greenbay
       - name: test-main
       - name: test-operations
+      - name: test-config
+      - name: test-check
+      - name: test-output
       - name: coverage
       - name: push
   - &race-detector-tasks
@@ -52,6 +58,9 @@ variables:
       - name: race-greenbay
       - name: race-main
       - name: race-operations
+      - name: race-config
+      - name: race-check
+      - name: race-output
 
 
 #######################################
@@ -127,6 +136,12 @@ tasks:
       - func: run-make
         vars: { target: "coverage-html"}
       - func: upload-coverage
+        vars: { name: "config"}
+      - func: upload-coverage
+        vars: { name: "check"}
+      - func: upload-coverage
+        vars: { name: "output"}
+      - func: upload-coverage
         vars: { name: "main"}
       - func: upload-coverage
         vars: { name: "operations"}
@@ -140,6 +155,12 @@ tasks:
     name: test-main
   - <<: *run-go-test-suite
     name: test-greenbay
+  - <<: *run-go-test-suite
+    name: test-check
+  - <<: *run-go-test-suite
+    name: test-config
+  - <<: *run-go-test-suite
+    name: test-output
 
   # run the suites with the race detector (one variant only)
   - <<: *run-go-test-suite
@@ -152,6 +173,18 @@ tasks:
       - name: build-race
   - <<: *run-go-test-suite
     name: race-greenbay
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-check
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-config
+    depends_on:
+      - name: build-race
+  - <<: *run-go-test-suite
+    name: race-output
     depends_on:
       - name: build-race
 
@@ -181,6 +214,7 @@ post:
     params:
       script: |
         rm -rf greenbay
+
 
 #######################################
 #           Buildvariants             #

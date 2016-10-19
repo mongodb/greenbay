@@ -33,7 +33,7 @@ func TestGlobalRegistry(t *testing.T) {
 }
 
 type RegistrySuite struct {
-	registry *resultsRegistry
+	registry *resultsFactoryRegistry
 	require  *require.Assertions
 	suite.Suite
 }

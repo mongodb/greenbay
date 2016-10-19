@@ -1,6 +1,7 @@
 package check
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/mongodb/amboy"
@@ -8,6 +9,7 @@ import (
 	"github.com/mongodb/greenbay"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"github.com/tychoish/grip"
 )
 
 type CheckSuite struct {
@@ -18,13 +20,10 @@ type CheckSuite struct {
 	suite.Suite
 }
 
-// Test constructors. For every new check, you should register a new
-// version of the suite, specifying a different "name" value.
-
-func TestMockCheckSuite(t *testing.T) {
-	s := new(CheckSuite)
-	s.name = "mock-check"
-	suite.Run(t, s)
+func TestCheckSuite(t *testing.T) {
+	for name := range registry.JobTypeNames() {
+		suite.Run(t, &CheckSuite{name: name})
+	}
 }
 
 // Test Fixtures
@@ -35,6 +34,7 @@ func (s *CheckSuite) SetupSuite() {
 	s.NoError(err)
 
 	s.factory = factory
+	grip.Infoln("running check suite for", s.name)
 }
 
 func (s *CheckSuite) SetupTest() {
@@ -81,9 +81,10 @@ func (s *CheckSuite) TestFailedChecksShouldReturnErrors() {
 
 	err := s.check.Error()
 
+	msg := fmt.Sprintf("%T: %+v", s.check, output)
 	if output.Passed {
-		s.NoError(err)
+		s.NoError(err, msg)
 	} else {
-		s.Error(err)
+		s.Error(err, msg)
 	}
 }

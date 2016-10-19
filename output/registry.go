@@ -16,7 +16,7 @@ type resultsFactoryRegistry struct {
 	mutex     sync.RWMutex
 }
 
-var registry *resultsRegistry
+var registry *resultsFactoryRegistry
 
 func init() {
 	registry = &resultsFactoryRegistry{
