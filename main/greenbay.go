@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tychoish/grip"
 	"github.com/urfave/cli"
+	"golang.org/x/net/context"
 )
 
 func main() {
