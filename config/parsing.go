@@ -1,13 +1,13 @@
 package config
 
 import (
-	"encoding/json"
+	"io/ioutil"
 	"path/filepath"
 
+	"github.com/ghodss/yaml"
 	"github.com/mongodb/amboy"
 	"github.com/pkg/errors"
 	"github.com/tychoish/grip"
-	"gopkg.in/yaml.v2"
 )
 
 // Helper functions that convert yaml-to-json so that the constructor
@@ -26,31 +26,34 @@ func getFormat(fn string) (amboy.Format, error) {
 }
 
 func getJSONFormattedConfig(format amboy.Format, data []byte) ([]byte, error) {
-	if format == amboy.JSON {
+	var err error
+
+	if format == amboy.YAML {
+		data, err = yaml.YAMLToJSON(data)
+		if err != nil {
+			return nil, errors.Wrap(err, "problem parsing config")
+		}
+
 		return data, nil
-	} else if format == amboy.YAML {
-		// the yaml package does not include a way to do the kind of
-		// delayed parsing that encoding/json permits, so we cycle
-		// into a map and then through the JSON parser itself.
-		intermediateOut := make(map[string]interface{})
-
-		err := yaml.Unmarshal(data, intermediateOut)
-		if err != nil {
-			return nil, errors.Wrap(err, "problem parsing yaml config")
-		}
-
-		data, err = json.Marshal(intermediateOut)
-		if err != nil {
-			// this requires valid yaml that isn't also
-			// valid json, which should be possible, but
-			// isn't exceptionally likely. worth catching.
-			return nil, errors.Wrap(err, "problem converting yaml to intermediate json")
-		}
-
+	} else if format == amboy.JSON {
 		return data, nil
 	}
 
-	return nil, errors.Errorf("format %s is not supported", format)
+	return nil, errors.Errorf("%s is not a support format", format)
+}
+
+func getRawConfig(fn string) ([]byte, error) {
+	data, err := ioutil.ReadFile(fn)
+	if err != nil {
+		return nil, errors.Wrapf(err, "problem reading greenbay config file: %s", fn)
+	}
+
+	format, err := getFormat(fn)
+	if err != nil {
+		return nil, errors.Wrapf(err, "problem determining format of file %s", fn)
+	}
+
+	return getJSONFormattedConfig(format, data)
 }
 
 ////////////////////////////////////////////////////////////////////////

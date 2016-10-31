@@ -21,8 +21,8 @@ func packageCheckerFactory(args []string) packageChecker {
 		output := strings.Trim(string(out), "\n\t ")
 
 		if err != nil {
-			return false, fmt.Sprintf("%s package '%s' is not installed (%s) (error=%v): %s",
-				localArgs[0], name, err, output)
+			return false, fmt.Sprintf("%s package '%s' is not installed (%s) (%+v): %s",
+				localArgs[0], name, err, output, strings.Join(localArgs, " "))
 		}
 
 		return true, output

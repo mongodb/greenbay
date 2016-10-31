@@ -25,3 +25,5 @@ imports:
   version: d77da356e56a7428ad25149ca77381849a6a5232
 - name: github.com/tychoish/grip
   version: 5190de1e82dbbd9bc844319fdec6be9ea40aa4dd
+- name: github.com/ghodss/yaml
+  version: bea76d6a4713e18b7f5321a2b020738552def3ea

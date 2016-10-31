@@ -41,9 +41,11 @@ func TestGetJsonConfig(t *testing.T) {
 		[]byte{},
 		[]byte(`{foo: 1, bar: true}`),
 		[]byte(`{}`),
+		[]byte(`[]`),
 	}
 
-	// because all valid json is also valid yaml, we can sort of fake this test, at least in the easy case:
+	// because all valid json is also valid yaml, we can sort of
+	// fake this test, at least in the easy case:
 
 	for _, data := range inputs {
 		out, err := getJSONFormattedConfig(amboy.JSON, data)
@@ -56,12 +58,7 @@ func TestGetJsonConfig(t *testing.T) {
 		}
 	}
 
-	// yaml config can't handle "[]" because it converts through a map:
-	out, err := getJSONFormattedConfig(amboy.YAML, []byte(`[]`))
-	assert.Error(err)
-	assert.Nil(out)
-
-	out, err = getJSONFormattedConfig(amboy.BSON, []byte{})
+	out, err := getJSONFormattedConfig(amboy.BSON, []byte{})
 	assert.Error(err)
 	assert.Nil(out)
 }

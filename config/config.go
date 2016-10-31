@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"runtime"
 	"sync"
 
@@ -27,7 +26,7 @@ type options struct {
 }
 
 func newTestConfig() *GreenbayTestConfig {
-	conf := &GreenbayTestConfig{}
+	conf := &GreenbayTestConfig{Options: &options{}}
 	conf.reset()
 	conf.Options.Jobs = runtime.NumCPU()
 
@@ -42,20 +41,9 @@ func (c *GreenbayTestConfig) reset() {
 // ReadConfig takes a path name to a configuration file (yaml
 // formatted,) and returns a configuration format.
 func ReadConfig(fn string) (*GreenbayTestConfig, error) {
-	data, err := ioutil.ReadFile(fn)
+	data, err := getRawConfig(fn)
 	if err != nil {
-		return nil, errors.Wrapf(err, "problem reading greenbay config file: %s", fn)
-	}
-
-	format, err := getFormat(fn)
-	if err != nil {
-		return nil, errors.Wrapf(err, "problem determining format of file %s", fn)
-	}
-
-	// Parse data:
-	data, err = getJSONFormattedConfig(format, data)
-	if err != nil {
-		return nil, errors.Wrapf(err, "problem parsing config from file %s", fn)
+		return nil, errors.Wrapf(err, "problem reading config data for '%s'", fn)
 	}
 
 	c := newTestConfig()
@@ -64,17 +52,14 @@ func ReadConfig(fn string) (*GreenbayTestConfig, error) {
 	// building. If either of those things change we should take
 	// the lock here.
 
-	// now we have a json formated byte slice in data and we can
-	// unmarshal it as we want.
-	err = json.Unmarshal(data, c)
-	if err != nil {
-		return nil, errors.Wrapf(err, "problem parsing config: %s", fn)
+	if err = json.Unmarshal(data, c); err != nil {
+		return nil, errors.Wrapf(err, "problem parsing config '%s'", fn)
 	}
 
-	err = c.parseTests()
-	if err != nil {
-		return nil, errors.Wrapf(err, "problem parsing tests from file: %s", fn)
+	if err = c.parseTests(); err != nil {
+		return nil, errors.Wrapf(err, "problem parsing tests from file '%s'", fn)
 	}
+
 	return c, nil
 }
 
