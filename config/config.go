@@ -7,6 +7,7 @@ import (
 
 	"github.com/mongodb/amboy"
 	"github.com/pkg/errors"
+	"github.com/tychoish/grip"
 )
 
 // GreenbayTestConfig defines the structure for a single greenbay test
@@ -59,6 +60,8 @@ func ReadConfig(fn string) (*GreenbayTestConfig, error) {
 	if err = c.parseTests(); err != nil {
 		return nil, errors.Wrapf(err, "problem parsing tests from file '%s'", fn)
 	}
+
+	grip.Infoln("loading config file:", fn)
 
 	return c, nil
 }

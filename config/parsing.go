@@ -80,7 +80,10 @@ func (c *GreenbayTestConfig) parseTests() error {
 		if err != nil {
 			grip.Alert(err)
 			catcher.Add(err)
+			continue
 		}
+
+		grip.Infoln("added test named:", msg.Name, "type:", testJob.Name())
 	}
 
 	return catcher.Resolve()
@@ -104,7 +107,6 @@ func (c *GreenbayTestConfig) addTest(name string, j amboy.Job) error {
 	}
 
 	c.tests[name] = j
-	grip.Infoln("added test named:", name)
 
 	return nil
 }

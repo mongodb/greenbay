@@ -12,18 +12,23 @@ import (
 )
 
 func init() {
-	for name, shouldFail := range map[string]bool{
-		"shell-operation":       false,
-		"shell-operation-error": true,
-	} {
-		jobName := name
-		registry.AddJobType(jobName, func() amboy.Job {
+	shellOperationFactoryFactory := func(name string, expectedFailrue bool) func() amboy.Job {
+		return func() amboy.Job {
 			return &shellOperation{
 				Environment: make(map[string]string),
-				shouldFail:  shouldFail,
-				Base:        NewBase(jobName, 0), // (name, version)
+				shouldFail:  expectedFailrue,
+				Base:        NewBase(name, 0), // (name, version)
 			}
-		})
+		}
+	}
+
+	checks := map[string]bool{
+		"shell-operation":       false,
+		"shell-operation-error": true,
+	}
+
+	for name, shouldFail := range checks {
+		registry.AddJobType(name, shellOperationFactoryFactory(name, shouldFail))
 	}
 }
 
@@ -31,9 +36,9 @@ type shellOperation struct {
 	Command          string            `bson:"command" json:"command" yaml:"command"`
 	WorkingDirectory string            `bson:"working_directory" json:"working_directory" yaml:"working_directory"`
 	Environment      map[string]string `bson:"environment" json:"environment" yaml:"environment"`
-	shouldFail       bool
+	*Base            `bson:"metadata" json:"metadata,omitempty" yaml:"metadata,omitempty"`
 
-	*Base `bson:"base" json:"base" yaml:"base"`
+	shouldFail bool
 }
 
 func (c *shellOperation) Run() {
@@ -65,8 +70,6 @@ func (c *shellOperation) Run() {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		logMsg = append(logMsg, fmt.Sprintf("err='%+v'", err))
-
-		c.setMessage(string(out))
 
 		if !c.shouldFail {
 			c.setState(false)
