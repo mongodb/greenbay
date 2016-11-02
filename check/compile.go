@@ -87,26 +87,26 @@ type compileCheck struct {
 
 func (c *compileCheck) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	c.setState(true)
 
 	if err := c.compiler.Validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if c.shouldRunCode {
 		if output, err := c.compiler.CompileAndRun(c.Source); err != nil {
 			c.setState(false)
-			c.addError(err)
+			c.AddError(err)
 			c.setMessage(output)
 		}
 	} else {
 		if err := c.compiler.Compile(c.Source); err != nil {
 			c.setState(false)
-			c.addError(err)
+			c.AddError(err)
 		}
 	}
 }

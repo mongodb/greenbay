@@ -96,12 +96,12 @@ func (c *containerCheck) validate() error {
 
 func (c *containerCheck) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 	c.setState(true)
 
 	if err := c.validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
@@ -109,14 +109,14 @@ func (c *containerCheck) Run() {
 	var messages []string
 	for _, host := range c.Hostnames {
 		if err := c.container.hostIsAccessible(host); err != nil {
-			c.addError(err)
+			c.AddError(err)
 			c.setState(false)
 			continue
 		}
 		activeHosts++
 
 		if msg := c.container.hostHasPrograms(host, c.Programs); len(msg) > 0 {
-			c.addError(errors.Errorf("host %s is missing %d programs", host, len(msg)))
+			c.AddError(errors.Errorf("host %s is missing %d programs", host, len(msg)))
 			messages = append(messages, msg...)
 			c.setState(false)
 		}

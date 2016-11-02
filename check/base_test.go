@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mongodb/amboy"
-	"github.com/mongodb/amboy/dependency"
+	"github.com/mongodb/amboy/job"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -26,7 +26,7 @@ func (s *BaseCheckSuite) SetupSuite() {
 }
 
 func (s *BaseCheckSuite) SetupTest() {
-	s.base = &Base{dep: dependency.NewAlways()}
+	s.base = &Base{Base: &job.Base{}}
 }
 
 func (s *BaseCheckSuite) TestInitialValuesOfBaseObject() {
@@ -37,77 +37,47 @@ func (s *BaseCheckSuite) TestInitialValuesOfBaseObject() {
 
 func (s *BaseCheckSuite) TestAddErrorWithNilObjectDoesNotChangeErrorState() {
 	for i := 0; i < 100; i++ {
-		s.base.addError(nil)
+		s.base.AddError(nil)
 		s.NoError(s.base.Error())
 		s.Len(s.base.Errors, 0)
-		s.False(s.base.hasErrors())
+		s.False(s.base.HasErrors())
 	}
 }
 
 func (s *BaseCheckSuite) TestAddErrorsPersistsErrorsInJob() {
 	for i := 1; i <= 100; i++ {
-		s.base.addError(errors.New("foo"))
+		s.base.AddError(errors.New("foo"))
 		s.Error(s.base.Error())
 		s.Len(s.base.Errors, i)
-		s.True(s.base.hasErrors())
+		s.True(s.base.HasErrors())
 		s.Len(strings.Split(s.base.Error().Error(), "\n"), i)
 	}
 }
 
-func (s *BaseCheckSuite) TestIdIsAccessorForTaskIDAttribute() {
-	s.Equal(s.base.TaskID, s.base.ID())
-	s.base.TaskID = "foo"
-	s.Equal("foo", s.base.ID())
-	s.Equal(s.base.TaskID, s.base.ID())
-}
-
-func (s *BaseCheckSuite) TestDependencyAccessorIsCorrect() {
-	s.Equal(s.base.dep, s.base.Dependency())
-	s.base.SetDependency(dependency.NewAlways())
-	s.Equal(dependency.AlwaysRun, s.base.Dependency().Type().Name)
-}
-
-func (s *BaseCheckSuite) TestSetDependencyAccepstAndPersistsChangesToDependencyType() {
-	s.Equal(dependency.AlwaysRun, s.base.dep.Type().Name)
-	localDep := dependency.NewLocalFileInstance()
-	s.NotEqual(localDep.Type().Name, dependency.AlwaysRun)
-	s.base.SetDependency(localDep)
-	s.Equal(dependency.LocalFileRelationship, s.base.dep.Type().Name)
-}
-
 func (s *BaseCheckSuite) TestOutputStructGenertedReflectsStateOfBaseObject() {
 	s.base = &Base{
-		TaskID: "foo",
-		JobType: amboy.JobType{
-			Name:    "base-greenbay-check",
-			Version: 42,
-			Format:  amboy.JSON,
-		},
 		TestSuites:    []string{"foo", "bar"},
-		IsComplete:    true,
 		WasSuccessful: true,
-		Errors:        []error{errors.New("foo")},
 		Message:       "baz",
+		Base: &job.Base{
+			JobType: amboy.JobType{
+				Name:    "base-greenbay-check",
+				Version: 42,
+				Format:  amboy.JSON,
+			},
+		},
 	}
+	s.base.SetID("foo")
 
 	output := s.base.Output()
 	s.Equal("foo", output.Name)
 	s.Equal("base-greenbay-check", output.Check)
 	s.Equal("foo", output.Suites[0])
 	s.Equal("bar", output.Suites[1])
-	s.True(output.Completed)
+	s.False(output.Completed)
 	s.True(output.Passed)
-	s.Equal("foo", output.Error)
+	s.Equal("", output.Error)
 	s.Equal("baz", output.Message)
-}
-
-func (s *BaseCheckSuite) TestMarkCompleteHelperSetsCompleteState() {
-	s.False(s.base.IsComplete)
-	s.False(s.base.Completed())
-	s.base.markComplete()
-
-	s.True(s.base.IsComplete)
-	s.True(s.base.Completed())
 }
 
 func (s *BaseCheckSuite) TestMutableIDMethod() {
@@ -167,25 +137,4 @@ func (s *BaseCheckSuite) TestSetSuitesOverridesExistingSuites() {
 		s.base.SetSuites(suites)
 		s.Equal(suites, s.base.Suites())
 	}
-}
-
-func (s *BaseCheckSuite) TestRoundTripAbilityThroughImportAndExport() {
-	s.base.JobType = amboy.JobType{
-		Format:  amboy.JSON,
-		Version: 42,
-	}
-
-	s.Equal(42, s.base.JobType.Version)
-	out, err := s.base.Export()
-
-	s.NoError(err)
-	s.NotNil(out)
-
-	s.base.JobType.Version = 21
-	s.Equal(21, s.base.JobType.Version)
-
-	err = s.base.Import(out)
-	s.NoError(err)
-	s.Equal(42, s.base.JobType.Version)
-
 }

@@ -42,7 +42,7 @@ func (s *ConfigSuite) SetupSuite() {
 
 	jsonJob, err := json.Marshal(&mockShellCheck{
 		shell: job.NewShellJob("echo foo", ""),
-		Base:  check.Base{},
+		Base:  check.NewBase("one", 0),
 	})
 	s.NoError(err)
 
@@ -93,7 +93,7 @@ func (s *ConfigSuite) TestInitializedConfObjectHasCorrectInitialValues() {
 func (s *ConfigSuite) TestAddingDuplicateJobsToConfigDoesResultInDuplicateTests() {
 	jsonJob, err := json.Marshal(&mockShellCheck{
 		shell: job.NewShellJob("echo foo", ""),
-		Base:  check.Base{},
+		Base:  check.NewBase("foo", 0),
 	})
 	s.NoError(err)
 

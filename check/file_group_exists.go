@@ -36,17 +36,17 @@ type fileGroup struct {
 
 func (c *fileGroup) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	if err := c.Requirements.Validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if len(c.FileNames) == 0 {
 		c.setState(false)
-		c.addError(errors.Errorf("no files specified for '%s' (%s) check",
+		c.AddError(errors.Errorf("no files specified for '%s' (%s) check",
 			c.ID(), c.Name()))
 		return
 	}
@@ -73,10 +73,10 @@ func (c *fileGroup) Run() {
 
 	result, err := c.Requirements.GetResults(len(extantFiles), len(missingFiles))
 	c.setState(result)
-	c.addError(err)
+	c.AddError(err)
 
 	if !result {
 		c.setMessage(msg)
-		c.addError(errors.New("group of files do not satisfy check requirements"))
+		c.AddError(errors.New("group of files do not satisfy check requirements"))
 	}
 }

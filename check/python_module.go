@@ -56,18 +56,19 @@ func (c *pythonModuleVersion) validate() error {
 
 func (c *pythonModuleVersion) Run() {
 	c.startTask()
-	defer c.markComplete()
+
+	defer c.MarkComplete()
 
 	if err := c.validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	expected, err := semver.Parse(c.Version)
 	if err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		c.setMessage(fmt.Sprintf("could not parse expected version '%s'", c.Version))
 		return
 	}
@@ -82,7 +83,7 @@ func (c *pythonModuleVersion) Run() {
 	version := strings.Trim(string(versionOut), "\n ")
 	if err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		c.setMessage(version)
 		return
 	}
@@ -90,7 +91,7 @@ func (c *pythonModuleVersion) Run() {
 	parsed, err := semver.Parse(version)
 	if err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		c.setMessage(fmt.Sprintf("could not parse version '%s' from module '%s'",
 			version, c.Module))
 		return
@@ -101,14 +102,14 @@ func (c *pythonModuleVersion) Run() {
 		// this should be unreachable, because the earlier
 		// validate will have caught it.
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if !result {
 		c.setState(false)
 		msg := fmt.Sprintln(parsed, c.Relationship, expected)
-		c.addError(errors.Errorf("check failed: %s", msg))
+		c.AddError(errors.Errorf("check failed: %s", msg))
 		c.setMessage(msg)
 		return
 	}

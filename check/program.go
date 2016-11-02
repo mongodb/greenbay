@@ -39,19 +39,19 @@ type programOutputCheck struct {
 
 func (c *programOutputCheck) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	c.setState(true)
 
 	if err := c.compiler.Validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if c.ExpectedOutput == "" {
 		c.setState(false)
-		c.addError(errors.Errorf("expected output for check '%s' can't be empty", c.ID()))
+		c.AddError(errors.Errorf("expected output for check '%s' can't be empty", c.ID()))
 		return
 	}
 
@@ -60,14 +60,14 @@ func (c *programOutputCheck) Run() {
 	output, err := c.compiler.CompileAndRun(c.Source)
 	if err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		c.setMessage(output)
 		return
 	}
 
 	if c.ExpectedOutput != output {
 		c.setState(false)
-		c.addError(errors.New("expected output does not match actual output"))
+		c.AddError(errors.New("expected output does not match actual output"))
 		c.setMessage([]string{
 			"-------------------- EXPECTED --------------------",
 			c.ExpectedOutput,

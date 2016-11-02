@@ -45,7 +45,7 @@ func (c *MockCheck) Run() {
 	// mark the job complete tells greenbay (amboy) that work on
 	// the check is complete. This should always run, hence the
 	// defer, to prevent rerunning tests.
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	// tasks *must* set the state of the check. Unless you set
 	// this to a "true" value, greenbay will report the test as

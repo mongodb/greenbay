@@ -43,7 +43,7 @@ type shellOperation struct {
 
 func (c *shellOperation) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	logMsg := []string{fmt.Sprintf("command='%s'", c.Command)}
 
@@ -73,12 +73,12 @@ func (c *shellOperation) Run() {
 
 		if !c.shouldFail {
 			c.setState(false)
-			c.addError(errors.Wrapf(err, "command failed",
+			c.AddError(errors.Wrapf(err, "command failed",
 				c.ID(), c.Command))
 		}
 	} else if c.shouldFail {
 		c.setState(false)
-		c.addError(errors.Errorf("command '%s' succeeded but test expects it to fail",
+		c.AddError(errors.Errorf("command '%s' succeeded but test expects it to fail",
 			c.Command))
 	}
 

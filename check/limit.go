@@ -31,20 +31,20 @@ type limitCheck struct {
 
 func (c *limitCheck) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	c.setState(true) // default to true unless proven otherwise.
 
 	result, err := c.limitTest(c.Value)
 	if err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if !result {
 		c.setState(false)
-		c.addError(errors.Errorf("limit in check %s is incorrect", c.ID()))
+		c.AddError(errors.Errorf("limit in check %s is incorrect", c.ID()))
 		return
 	}
 }

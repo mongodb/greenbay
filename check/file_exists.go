@@ -36,7 +36,7 @@ type fileExistance struct {
 
 func (c *fileExistance) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	var fileExists bool
 	var verb string
@@ -46,7 +46,7 @@ func (c *fileExistance) Run() {
 
 	c.setState(fileExists == c.ShouldExist)
 	if fileExists != c.ShouldExist {
-		c.addError(errors.New("file existence check did not detect expected state"))
+		c.AddError(errors.New("file existence check did not detect expected state"))
 	}
 
 	if c.ShouldExist {

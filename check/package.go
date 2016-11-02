@@ -42,7 +42,7 @@ type packageInstalled struct {
 
 func (c *packageInstalled) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	exists, msg := c.checker(c.Package)
 
@@ -52,7 +52,7 @@ func (c *packageInstalled) Run() {
 
 		if exists {
 			c.setMessage(msg)
-			c.addError(errors.Errorf("package '%s' exists (check=%s) and should not",
+			c.AddError(errors.Errorf("package '%s' exists (check=%s) and should not",
 				c.Package, c.Name()))
 		}
 		return
@@ -63,6 +63,6 @@ func (c *packageInstalled) Run() {
 
 	if !exists {
 		c.setMessage(msg)
-		c.addError(errors.Errorf("package %s does note exist and should", c.Package))
+		c.AddError(errors.Errorf("package %s does note exist and should", c.Package))
 	}
 }

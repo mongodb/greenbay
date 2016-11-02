@@ -17,13 +17,7 @@ const mockShellCheckName string = "mock-shell-check"
 func init() {
 	registry.AddJobType(mockShellCheckName, func() amboy.Job {
 		return &mockShellCheck{
-			Base: check.Base{
-				JobType: amboy.JobType{
-					Name:    mockShellCheckName,
-					Version: 0,
-					Format:  amboy.JSON,
-				},
-			},
+			Base: check.NewBase(mockShellCheckName, 0),
 		}
 	})
 }
@@ -43,7 +37,7 @@ func TestRawCheckSuite(t *testing.T) {
 // Mock/Minimal Implementation
 
 type mockShellCheck struct {
-	check.Base
+	*check.Base
 	shell *job.ShellJob
 }
 
@@ -60,7 +54,7 @@ func (s *RawCheckSuite) SetupSuite() {
 func (s *RawCheckSuite) SetupTest() {
 	check := &mockShellCheck{
 		shell: job.NewShellJob("echo foo", ""),
-		Base:  check.Base{},
+		Base:  check.NewBase("check-working-shell", 0),
 	}
 
 	jsonJob, err := json.Marshal(check)
@@ -123,6 +117,6 @@ func (s *RawCheckSuite) TestResolveCheckReturnsPopulatedChecker() {
 	s.NoError(err)
 	s.NotNil(c)
 
-	s.Equal(s.check.Name, c.ID())
+	s.Equal(s.check.Name, c.Name())
 	s.Equal(s.check.Suites, c.Suites())
 }

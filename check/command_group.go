@@ -36,17 +36,17 @@ type shellGroup struct {
 
 func (c *shellGroup) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	if err := c.Requirements.Validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if len(c.Commands) == 0 {
 		c.setState(false)
-		c.addError(errors.Errorf("no files specified for '%s' (%s) check",
+		c.AddError(errors.Errorf("no files specified for '%s' (%s) check",
 			c.ID(), c.Name()))
 		return
 	}
@@ -67,7 +67,7 @@ func (c *shellGroup) Run() {
 
 	result, err := c.Requirements.GetResults(len(success), len(failure))
 	c.setState(result)
-	c.addError(err)
+	c.AddError(err)
 	grip.Debugf("task '%s' received result %t, with %d successes and %d failures",
 		c.ID(), result, len(success), len(failure))
 
@@ -96,6 +96,6 @@ func (c *shellGroup) Run() {
 		}
 
 		c.setMessage(output)
-		c.addError(errors.New(strings.Join(errs, "\n")))
+		c.AddError(errors.New(strings.Join(errs, "\n")))
 	}
 }

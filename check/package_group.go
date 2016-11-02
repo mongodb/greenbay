@@ -37,17 +37,17 @@ type packageGroup struct {
 
 func (c *packageGroup) Run() {
 	c.startTask()
-	defer c.markComplete()
+	defer c.MarkComplete()
 
 	if err := c.Requirements.Validate(); err != nil {
 		c.setState(false)
-		c.addError(err)
+		c.AddError(err)
 		return
 	}
 
 	if len(c.Packages) == 0 {
 		c.setState(false)
-		c.addError(errors.Errorf("no packages for '%s' (%s) check",
+		c.AddError(errors.Errorf("no packages for '%s' (%s) check",
 			c.ID(), c.Name()))
 		return
 	}
@@ -68,10 +68,10 @@ func (c *packageGroup) Run() {
 
 	result, err := c.Requirements.GetResults(len(installed), len(missing))
 	c.setState(result)
-	c.addError(err)
+	c.AddError(err)
 
 	if !result {
 		c.setMessage(messages)
-		c.addError(errors.New("group of packages does not satisfy check requirements"))
+		c.AddError(errors.New("group of packages does not satisfy check requirements"))
 	}
 }
