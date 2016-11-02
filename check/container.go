@@ -53,7 +53,7 @@ func (l lxcCheck) hostIsAccessible(host string) error {
 	}
 
 	return errors.Errorf("lxc host %s were not reachable after %s",
-		host, time.Now().Sub(start).String())
+		host, time.Since(start).String())
 }
 
 func (l lxcCheck) hostHasPrograms(host string, programs []string) []string {

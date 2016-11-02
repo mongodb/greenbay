@@ -36,7 +36,8 @@ lintArgs += --exclude="warning: package comment should be of the form \"Package 
 #   known issues that the linter picks up that are not relevant in our cases
 lintArgs += --exclude="warning: jobImpl is unused.*" # this interface is used for testing
 lintArgs += --exclude="file is not goimported" # top-level mains aren't imported
-lintArgs += --exclude="error return value not checked (defer.*"
+lintArgs += --exclude="error return value not checked .defer.*" # use of defer should be aware of error handling (or it doesn't matter)
+lintArgs += --exclude="2 other occurrence.s. of .gte. found in:.*" # specific case where constants wouldn't buy us much.
 # end linting configuration
 
 

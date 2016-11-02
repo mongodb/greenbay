@@ -49,7 +49,7 @@ func (s *MainSuite) TestLogSetupWithInvalidLevelDoesNotChangeLevel() {
 func (s *MainSuite) TestAppBuilderFunctionSetsCorrectProperties() {
 	app := buildApp()
 
-	s.Equal("curator", app.Name)
+	s.Equal("greenbay", app.Name)
 
 	// the exact number will change, but should be >0
 	s.NotEqual(len(app.Commands), 0)

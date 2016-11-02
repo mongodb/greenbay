@@ -33,7 +33,6 @@ variables:
       # must additionally add the test suite name to the dev-tasks list
       # bellow and the task list, using the run-go-suite template
       - name: build
-      - name: test-greenbay
       - name: test-main
       - name: test-operations
       - name: test-config
@@ -45,7 +44,6 @@ variables:
       # linting, and the race detector this is a special builder.
       - name: build
       - name: lint
-      - name: test-greenbay
       - name: test-main
       - name: test-operations
       - name: test-config
@@ -55,7 +53,6 @@ variables:
       - name: push
   - &race-detector-tasks
       - name: build-race
-      - name: race-greenbay
       - name: race-main
       - name: race-operations
       - name: race-config
@@ -145,16 +142,12 @@ tasks:
         vars: { name: "main"}
       - func: upload-coverage
         vars: { name: "operations"}
-      - func: upload-coverage
-        vars: { name: "greenbay"}
 
   # define tasks for all test suites (modules)
   - <<: *run-go-test-suite
     name: test-operations
   - <<: *run-go-test-suite
     name: test-main
-  - <<: *run-go-test-suite
-    name: test-greenbay
   - <<: *run-go-test-suite
     name: test-check
   - <<: *run-go-test-suite
@@ -169,10 +162,6 @@ tasks:
       - name: build-race
   - <<: *run-go-test-suite
     name: race-main
-    depends_on:
-      - name: build-race
-  - <<: *run-go-test-suite
-    name: race-greenbay
     depends_on:
       - name: build-race
   - <<: *run-go-test-suite
