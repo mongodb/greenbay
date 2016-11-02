@@ -2,68 +2,50 @@ package job
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/amboy/dependency"
-	"github.com/mongodb/amboy/priority"
 	"github.com/mongodb/amboy/registry"
 	"github.com/pkg/errors"
 	"github.com/tychoish/grip"
 )
 
-func init() {
-	registry.AddJobType("group", groupJobFactory)
-}
-
-// Group is a structure for running collections of Job objects at
-// the same time, as a single Job. Use Job groups to isolate several
-// jobs from other Jobs in the queue, and ensure that several jobs run
-// on a single system.
+// Group is a structure for running collections of Job objects at the
+// same time, as a single Job. Use Groups to isolate several Jobs from
+// other Jobs in the queue, and ensure that several Jobs run on a
+// single system.
 type Group struct {
-	Name     string                              `bson:"name" json:"name" yaml:"name"`
-	Complete bool                                `bson:"complete" json:"complete" yaml:"complete"`
-	Errors   []error                             `bson:"errors" json:"errors" yaml:"errors"`
-	Jobs     map[string]*registry.JobInterchange `bson:"jobs" json:"jobs" yaml:"jobs"`
-	T        amboy.JobType                       `bson:"type" json:"type" yaml:"type"`
-	dep      dependency.Manager
-	mutex    sync.RWMutex
+	Jobs  map[string]*registry.JobInterchange `bson:"jobs" json:"jobs" yaml:"jobs"`
+	*Base `bson:"metadata" json:"metadata" yaml:"metadata"`
 
-	priority.Value
-
-	// It might be feasible to make a Queue implementation that
-	// implements the Job interface so that we can eliminate this
-	// entirely.
+	mutex sync.RWMutex
 }
 
 // NewGroup creates a new, empty Group object.
 func NewGroup(name string) *Group {
 	g := newGroupInstance()
-	g.Name = name
+	g.SetID(name)
 
 	return g
-}
-
-// groupJobFactory produces an empty initialized job group job object,
-// for use in the job registry. Because of the return type and the
-// registry.JobFactory type.
-func groupJobFactory() amboy.Job {
-	return newGroupInstance()
 }
 
 // newGroupInstance is a common constructor for the public NewGroup
 // constructior and the registry.JobFactory constructor.
 func newGroupInstance() *Group {
-	return &Group{
+	g := &Group{
 		Jobs: make(map[string]*registry.JobInterchange),
-		dep:  dependency.NewAlways(),
-		T: amboy.JobType{
-			Name:    "group",
-			Version: 0,
-			Format:  amboy.BSON,
+		Base: &Base{
+			JobType: amboy.JobType{
+				Name:    "group",
+				Version: 1,
+				Format:  amboy.BSON,
+			},
 		},
 	}
+
+	g.Base.SetDependency(dependency.NewAlways())
+	return g
 }
 
 // Add is not part of the Job interface, but allows callers to append
@@ -77,7 +59,7 @@ func (g *Group) Add(j amboy.Job) error {
 	_, exists := g.Jobs[name]
 	if exists {
 		return fmt.Errorf("job named '%s', already exists in Group %s",
-			name, g.Name)
+			name, g.ID())
 	}
 
 	job, err := registry.MakeJobInterchange(j)
@@ -89,21 +71,13 @@ func (g *Group) Add(j amboy.Job) error {
 	return nil
 }
 
-// ID returns a (hopefully) unique identifier for the job, based on
-// the name specified to the constructor and in this implementation,
-// the name passed to the constructor and an internal counter.
-func (g *Group) ID() string {
-	return g.Name
-}
-
 // Run executes the jobs. Provides "continue on error" semantics for
 // Jobs in the Group. Returns an error if: the Group has already
 // run, or if any of the constituent Jobs produce an error *or* if
 // there are problems with the JobInterchange converters.
 func (g *Group) Run() {
-	if g.Complete {
-		g.Errors = append(g.Errors, fmt.Errorf("Group '%s' has already executed", g.Name))
-
+	if g.Completed() {
+		g.AddError(errors.Errorf("Group '%s' has already executed", g.ID()))
 		return
 	}
 
@@ -113,8 +87,7 @@ func (g *Group) Run() {
 	for _, job := range g.Jobs {
 		runnableJob, err := registry.ConvertToJob(job)
 		if err != nil {
-			g.Errors = append(g.Errors, err)
-			continue
+			g.AddError(err)
 		}
 
 		depState := runnableJob.Dependency().State()
@@ -134,16 +107,16 @@ func (g *Group) Run() {
 			// after the task completes, add the issue
 			// back to Jobs map so that we preserve errors
 			// idiomatically for Groups.
-
 			jobErr := j.Error()
+			g.AddError(jobErr)
+
 			job, err := registry.MakeJobInterchange(j)
 			if err != nil {
-				g.Errors = append(g.Errors, err)
+				g.AddError(err)
 				return
 			}
 
 			if jobErr != nil {
-				g.Errors = append(g.Errors, jobErr)
 				return
 			}
 
@@ -153,45 +126,9 @@ func (g *Group) Run() {
 		}(runnableJob, g)
 	}
 	g.mutex.RUnlock()
-
 	wg.Wait()
 
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-	g.Complete = true
-}
-
-func (g *Group) Error() error {
-	if len(g.Errors) == 0 {
-		return nil
-	}
-
-	var outputs []string
-
-	for _, err := range g.Errors {
-		outputs = append(outputs, fmt.Sprintf("%+v", err))
-	}
-
-	return errors.New(strings.Join(outputs, "\n"))
-}
-
-// Completed returns true when the job has executed.
-func (g *Group) Completed() bool {
-	g.mutex.RLock()
-	defer g.mutex.RUnlock()
-
-	return g.Complete
-}
-
-// Type returns a JobType object for this Job, which reports the kind
-// of job and the version of the Job when it was created.
-func (g *Group) Type() amboy.JobType {
-	return g.T
-}
-
-// Dependency returns the dependency object for this task.
-func (g *Group) Dependency() dependency.Manager {
-	return g.dep
+	g.MarkComplete()
 }
 
 // SetDependency allows you to configure the dependency.Manager
@@ -200,21 +137,10 @@ func (g *Group) Dependency() dependency.Manager {
 // type.
 func (g *Group) SetDependency(d dependency.Manager) {
 	if d == nil || d.Type().Name != "always" {
+		grip.Warningf("group job types must have 'always' dependency types, '%s' is invalid",
+			d.Type().Name)
 		return
 	}
 
-	g.dep = d
-}
-
-// Export serializes the job object according to the Format specified
-// in the the JobType argument.
-func (g *Group) Export() ([]byte, error) {
-	return amboy.ConvertTo(g.Type().Format, g)
-}
-
-// Import takes a byte array, and attempts to marshal that data into
-// the current job object according to the format specified in the Job
-// type definition for this object.
-func (g *Group) Import(data []byte) error {
-	return amboy.ConvertFrom(g.Type().Format, data, g)
+	g.Base.SetDependency(d)
 }

@@ -1,3 +1,5 @@
+// +build go1.7
+
 package rest
 
 import (
@@ -35,6 +37,8 @@ func TestClientSuite(t *testing.T) {
 }
 
 func (s *ClientSuite) SetupSuite() {
+	job.RegisterDefaultJobs()
+
 	s.require = s.Require()
 	ctx, cancel := context.WithCancel(context.Background())
 	s.closer = cancel
@@ -283,7 +287,7 @@ func (s *ClientSuite) TestGetStatusResponseHasExpectedValues() {
 	s.True(st.QueueRunning)
 	s.Equal("ok", st.Status)
 	s.Equal(0, st.PendingJobs)
-	s.Len(st.SupportedJobTypes, 2)
+	s.Len(st.SupportedJobTypes, 2, fmt.Sprint(st.SupportedJobTypes))
 }
 
 func (s *ClientSuite) TestGetStatsHelperWithInvalidHostReturnsError() {
