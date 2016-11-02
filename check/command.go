@@ -12,11 +12,11 @@ import (
 )
 
 func init() {
-	shellOperationFactoryFactory := func(name string, expectedFailrue bool) func() amboy.Job {
+	shellOperationFactoryFactory := func(name string, expectedFailure bool) func() amboy.Job {
 		return func() amboy.Job {
 			return &shellOperation{
 				Environment: make(map[string]string),
-				shouldFail:  expectedFailrue,
+				shouldFail:  expectedFailure,
 				Base:        NewBase(name, 0), // (name, version)
 			}
 		}
