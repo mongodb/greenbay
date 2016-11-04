@@ -2,7 +2,6 @@ package output
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -80,7 +79,7 @@ func (s *ProducerSuite) SetupSuite() {
 		}
 
 		if i%2 == 0 {
-			check.Base.Errors = []error{errors.New("even")}
+			check.Base.Errors = []string{"even"}
 		}
 
 		s.NoError(s.queue.Put(check))
