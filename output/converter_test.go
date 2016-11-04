@@ -30,7 +30,7 @@ func TestConverter(t *testing.T) {
 	assert.Error(err)
 	assert.Nil(c)
 
-	mc := &mockCheck{}
+	mc := &mockCheck{Base: check.Base{Base: &job.Base{}}}
 	assert.Implements((*amboy.Job)(nil), mc)
 	assert.Implements((*greenbay.Checker)(nil), mc)
 
@@ -44,7 +44,7 @@ func TestJobToCheckGenerator(t *testing.T) {
 	input := make(chan amboy.Job)
 	output := jobsToCheck(input)
 
-	i := &mockCheck{}
+	i := &mockCheck{Base: check.Base{Base: &job.Base{}}}
 	assert.Implements((*amboy.Job)(nil), i)
 	input <- i
 

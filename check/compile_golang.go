@@ -32,6 +32,7 @@ func goCompilerAuto() compiler {
 		"/opt/go/bin/go",
 		"/opt/mongodbtoolchain/v2/bin/go",
 		"/usr/bin/go",
+		"/usr/local/go/bin/go",
 		"/usr/local/bin/go",
 	}
 	c := compileGolang{}

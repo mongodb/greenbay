@@ -8,7 +8,9 @@ import (
 	"testing"
 
 	"github.com/mongodb/amboy"
+	"github.com/mongodb/amboy/job"
 	"github.com/mongodb/amboy/queue"
+	"github.com/mongodb/greenbay/check"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -43,7 +45,7 @@ func (s *OptionsSuite) SetupSuite() {
 	s.require.NoError(s.queue.Start(ctx))
 	num := 5
 	for i := 0; i < num; i++ {
-		check := &mockCheck{}
+		check := &mockCheck{Base: check.Base{Base: &job.Base{}}}
 		check.SetID(fmt.Sprintf("mock-check-%d", i))
 		s.NoError(s.queue.Put(check))
 	}

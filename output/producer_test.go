@@ -11,6 +11,7 @@ import (
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/amboy/job"
 	"github.com/mongodb/amboy/queue"
+	"github.com/mongodb/greenbay/check"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -72,7 +73,7 @@ func (s *ProducerSuite) SetupSuite() {
 	s.require.NoError(err)
 	s.tmpDir = tmpDir
 	for i := 0; i < 10; i++ {
-		check := &mockCheck{}
+		check := &mockCheck{Base: check.Base{Base: &job.Base{}}}
 		check.SetID(fmt.Sprintf("mock-check-%d", i))
 		if i%3 == 0 {
 			check.Base.Message = fmt.Sprintf("count=%d", i)
