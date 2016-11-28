@@ -6,7 +6,7 @@ func init() {
 		"dpkg":   packageCheckerFactory([]string{"dpkg", "-l"}),
 		"brew":   packageCheckerFactory([]string{"brew", "list"}),
 		"pacman": packageCheckerFactory([]string{"pacman", "-Q"}),
-		"pip":    packageCheckerFactory([]string{"pip", "info"}),
+		"pip":    packageCheckerFactory([]string{"pip", "show"}),
 		"gem":    packageCheckerFactory([]string{"gem", "which"}),
 	}
 
