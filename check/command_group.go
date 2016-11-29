@@ -29,7 +29,7 @@ func registerCommandGroupChecks() {
 }
 
 type shellGroup struct {
-	Commands     []*shellOperation `bson:"commands" json:"commands" yaml:"commands"`
+	Commands     []shellOperation  `bson:"commands" json:"commands" yaml:"commands"`
 	Requirements GroupRequirements `bson:"requirements" json:"requirements" yaml:"requirements"`
 	*Base        `bson:"metadata" json:"metadata" yaml:"metadata"`
 }
@@ -54,7 +54,11 @@ func (c *shellGroup) Run() {
 	var success []*greenbay.CheckOutput
 	var failure []*greenbay.CheckOutput
 
-	for _, cmd := range c.Commands {
+	for idx, cmd := range c.Commands {
+		if cmd.Base == nil {
+			cmd.Base = NewBase(fmt.Sprintf("%s-%d", c.ID(), idx), c.Type().Version)
+		}
+
 		cmd.Run()
 
 		result := cmd.Output()
