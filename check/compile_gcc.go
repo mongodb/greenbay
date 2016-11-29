@@ -92,7 +92,7 @@ func (c compileGCC) Compile(testBody string, cFlags ...string) error {
 func (c compileGCC) CompileAndRun(testBody string, cFlags ...string) (string, error) {
 	outputName, sourceName, err := writeTestBody(testBody, "c")
 	if err != nil {
-		return errors.Wrap(err, "problem writing test to file")
+		return "", errors.Wrap(err, "problem writing test to file")
 	}
 
 	defer grip.CatchWarning(os.Remove(outputName))
