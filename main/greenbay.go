@@ -149,18 +149,16 @@ func checks() cli.Command {
 				Name: "format",
 				Usage: fmt.Sprintln("Selects the output format, defaults to a format that mirrors gotest,",
 					"but also supports evergreen's results format.",
-					"Use either 'gotest' (default) or 'results'."),
+					"Use 'gotest' (default), 'result', or 'log'."),
 				Value: "gotest",
 			},
 			cli.StringSliceFlag{
 				Name:  "test",
-				Usage: "specify a check, by name",
-				Value: &cli.StringSlice{"base"},
+				Usage: "specify a check, by name. may specify multiple times",
 			},
 			cli.StringSliceFlag{
 				Name:  "suite",
-				Usage: "specify a suite or suites, by name",
-				Value: &cli.StringSlice{"all"},
+				Usage: "specify a suite or suites, by name. if not specified, runs the 'all' suite",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -169,14 +167,20 @@ func checks() cli.Command {
 			// underlying processes.
 			ctx := context.Background()
 
+			suites := c.StringSlice("suite")
+			tests := c.StringSlice("test")
+			if len(suites) == 0 && len(tests) == 0 {
+				suites = append(suites, "all")
+			}
+
 			app, err := operations.NewApp(
 				c.String("conf"),
 				c.String("output"),
 				c.String("format"),
 				c.Bool("quiet"),
 				c.Int("jobs"),
-				c.StringSlice("suite"),
-				c.StringSlice("tests"))
+				suites,
+				tests)
 
 			if err != nil {
 				return errors.Wrap(err, "problem prepping to run tests")

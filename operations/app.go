@@ -115,7 +115,7 @@ func (a *GreenbayApp) addSuites(q amboy.Queue) error {
 	}
 
 	if q == nil || !q.Started() {
-		return errors.New("cannot add suites to a nil or started queue")
+		return errors.New("cannot add suites to a nil or unstarted queue")
 	}
 
 	catcher := grip.NewCatcher()
@@ -137,7 +137,7 @@ func (a *GreenbayApp) addTests(q amboy.Queue) error {
 	}
 
 	if q == nil || !q.Started() {
-		return errors.New("cannot add tests to a nil or started queue")
+		return errors.New("cannot add tests to a nil or unstarted queue")
 	}
 
 	catcher := grip.NewCatcher()
