@@ -7,7 +7,7 @@ func init() {
 		"brew":   packageCheckerFactory([]string{"brew", "list"}),
 		"pacman": packageCheckerFactory([]string{"pacman", "-Q"}),
 		"pip":    packageCheckerFactory([]string{"pip", "show"}),
-		"gem":    packageCheckerFactory([]string{"gem", "which"}),
+		"gem":    packageCheckerFactory([]string{"gem", "list", "-i"}),
 	}
 
 	groupRequirementRegistry = map[string]GroupRequirements{
