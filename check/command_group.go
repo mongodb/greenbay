@@ -29,7 +29,7 @@ func registerCommandGroupChecks() {
 }
 
 type shellGroup struct {
-	Commands     []shellOperation  `bson:"commands" json:"commands" yaml:"commands"`
+	Commands     []*shellOperation `bson:"commands" json:"commands" yaml:"commands"`
 	Requirements GroupRequirements `bson:"requirements" json:"requirements" yaml:"requirements"`
 	*Base        `bson:"metadata" json:"metadata" yaml:"metadata"`
 }
