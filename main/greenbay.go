@@ -147,7 +147,7 @@ func checks() cli.Command {
 			},
 			cli.StringFlag{
 				Name: "format",
-				Usage: fmt.Sprintln("Selects the output format, defautls to a format that mirrors gotest,",
+				Usage: fmt.Sprintln("Selects the output format, defaults to a format that mirrors gotest,",
 					"but also supports evergreen's results format.",
 					"Use either 'gotest' (default) or 'results'."),
 				Value: "gotest",

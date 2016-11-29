@@ -25,6 +25,7 @@ func TestScriptCompilerImplementation(t *testing.T) {
 
 	// check that a basic hello world operation succeeds
 	err := check.Compile("print('hello world')")
+	assert.NoError(err)
 
 	out, err := check.CompileAndRun("print('hello world!')")
 	assert.NoError(err)

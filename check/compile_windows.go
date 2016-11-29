@@ -177,6 +177,10 @@ func (c *compileVS) Compile(testBody string, cFlags ...string) error {
 
 func (c *compileVS) CompileAndRun(testBody string, cFlags ...string) (string, error) {
 	outputName, sourceName, err := writeTestBody(testBody, "c")
+	if err != nil {
+		return errors.Wrap(err, "problem writing test to file")
+	}
+
 	defer os.Remove(sourceName)
 
 	defer os.Remove(fmt.Sprintf("%s.obj", outputName))

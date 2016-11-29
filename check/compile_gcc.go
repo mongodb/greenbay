@@ -73,6 +73,10 @@ func (c compileGCC) Validate() error {
 func (c compileGCC) Compile(testBody string, cFlags ...string) error {
 	outputName, sourceName, err := writeTestBody(testBody, "c")
 	outputName += ".o"
+	if err != nil {
+		return errors.Wrap(err, "problem writing test to file")
+	}
+
 	defer grip.CatchWarning(os.Remove(outputName))
 
 	cmd := exec.Command(c.bin, "-Werror", "-o", outputName, "-c", sourceName)
@@ -87,6 +91,10 @@ func (c compileGCC) Compile(testBody string, cFlags ...string) error {
 
 func (c compileGCC) CompileAndRun(testBody string, cFlags ...string) (string, error) {
 	outputName, sourceName, err := writeTestBody(testBody, "c")
+	if err != nil {
+		return errors.Wrap(err, "problem writing test to file")
+	}
+
 	defer grip.CatchWarning(os.Remove(outputName))
 
 	argv := []string{"-Werror", "-o", outputName}

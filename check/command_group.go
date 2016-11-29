@@ -74,8 +74,8 @@ func (c *shellGroup) Run() {
 	if !result {
 		var output []string
 		var errs []string
+		var printableResults []*greenbay.CheckOutput
 
-		printableResults := []*greenbay.CheckOutput{}
 		if c.Requirements.None {
 			printableResults = success
 		} else if c.Requirements.Any || c.Requirements.One {
