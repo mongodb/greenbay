@@ -25,6 +25,13 @@ variables:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
         vars: { target: "${task_name}" }
+  - &generic-linux-distros
+    - rhel62-test
+    - rhel70-small
+    - rhel62-small
+    - linux-64-amzn-test
+    - debian81-test
+    - debian71-test
 
   # Task lists for build variants. Some (known) duplication between
   # these lists and the task definitions below.
@@ -74,113 +81,130 @@ functions:
          # Configure a local go path for this build.
          export GOPATH=`pwd`/gopath
 
+         # on windows we need to turn the slashes the other way
+         if [ "Windows_NT" == "$OS" ]; then
+            export GOPATH=$(cygpath -m $GOPATH)
+         fi
+
          cd gopath/src/github.com/mongodb/greenbay
 
          # Run make, called with proper environment variables set,
          # running the target.
          ${build_env} make vendor ${target}
-  upload-coverage:
-    command: s3.put
-    params:
-      aws_key: ${aws_key}
-      aws_secret: ${aws_secret}
-      local_file: gopath/src/github.com/mongodb/greenbay/build/coverage.${name}.html
-      remote_file: greenbay/${task_id}/${name}-coverage.html
-      bucket: mciuploads
-      content_type: text/html
-      permissions: public-read
-      display_name: coverage-${name}
-  upload-dist:
-    command: s3.put
-    params:
-      aws_key: ${aws_key}
-      aws_secret: ${aws_secret}
-      local_file: gopath/src/github.com/mongodb/greenbay/build/dist.tar.gz
-      remote_file: greenbay/${build_id}-${build_variant}/greenbay-dist-${revision}.tar.gz
-      bucket: mciuploads
-      content_type: application/x-gzip
-      permissions: public-read
-      display_name: greenbay-dist.tar.gz
-
+         ${build_env|} ${xc_env|} make ${target}
 
 #######################################
 #                Tasks                #
 #######################################
 tasks:
-  # the build (with and without the race detector) and lint tasks use
-  # a template that does not include test result parsing.
   - name: build
+    tags: ["dist"]
     commands:
       - command: git.get_project
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
         vars: { target: "build dist" }
-      - func: upload-dist
+      - command: s3.put
+        params:
+          aws_key: ${aws_key}
+          aws_secret: ${aws_secret}
+          local_file: gopath/src/github.com/mongodb/greenbay/build/dist.tar.gz
+          remote_file: greenbay/${build_id}-${build_variant}/greenbay-dist-${revision}.tar.gz
+          bucket: mciuploads
+          content_type: application/x-gzip
+          permissions: public-read
+          display_name: dist.tar.gz
+
   - <<: *run-build
+    tags: ["race"]
     name: build-race
+
   - <<: *run-build
+    tags: ["report"]
     name: lint
 
-  # The coverage task is less generic.
   - name: coverage
-    depends_on:
-      - name: build
+    tags: [ "report" ]
     commands:
       - command: git.get_project
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
-        vars: { target: "coverage-html"}
-      - func: upload-coverage
-        vars: { name: "config"}
-      - func: upload-coverage
-        vars: { name: "check"}
-      - func: upload-coverage
-        vars: { name: "output"}
-      - func: upload-coverage
-        vars: { name: "main"}
-      - func: upload-coverage
-        vars: { name: "operations"}
+        vars:
+          target: "coverage-html"
+          make_args: "-k"
+      - command: s3.put
+        params:
+          aws_key: ${aws_key}
+          aws_secret: ${aws_secret}
+          local_files_include_filter: ["gopath/src/github.com/mongodb/greenbay/bin/coverage.*.html"]
+          remote_file: evergreen/${task_id}/
+          bucket: mciuploads
+          content_type: text/html
+          permissions: public-read
+          display_name: "(html) coverage:"
+      - command: s3.put
+        params:
+          aws_key: ${aws_key}
+          aws_secret: ${aws_secret}
+          local_files_include_filter: ["gopath/src/github.com/mongodb/greenbay/bin/coverage.*.out"]
+          remote_file: evergreen/${task_id}/
+          bucket: mciuploads
+          content_type: text/plain
+          permissions: public-read
+          display_name: "(txt) coverage:"
 
   # define tasks for all test suites (modules)
   - <<: *run-go-test-suite
+    tags: ["test"]
     name: test-operations
+    tags: ["test"]
   - <<: *run-go-test-suite
     name: test-main
+    tags: ["test"]
   - <<: *run-go-test-suite
     name: test-check
+    tags: ["test"]
   - <<: *run-go-test-suite
     name: test-config
+    tags: ["test"]
   - <<: *run-go-test-suite
     name: test-output
+    tags: ["test"]
 
   # run the suites with the race detector (one variant only)
   - <<: *run-go-test-suite
     name: race-operations
+    tags: ["race"]
     depends_on:
       - name: build-race
   - <<: *run-go-test-suite
     name: race-main
+    tags: ["race"]
     depends_on:
       - name: build-race
   - <<: *run-go-test-suite
     name: race-check
+    tags: ["race"]
     depends_on:
       - name: build-race
   - <<: *run-go-test-suite
     name: race-config
+    tags: ["race"]
     depends_on:
       - name: build-race
   - <<: *run-go-test-suite
     name: race-output
+    tags: ["race"]
     depends_on:
       - name: build-race
 
   - name: push
-    patchable: false
+    tags: ["dist"]
     depends_on:
     - name: "*"
+    patchable: false
     stepback: false
     commands:
       - command: s3Copy.copy
@@ -213,40 +237,40 @@ buildvariants:
     display_name: Arch Linux
     run_on:
       - archlinux-test
+      - archlinux-build
     tasks:
-      *dev-tasks
+      - ".dist"
+      - ".test"
 
   - name: race-detector
     display_name: Race Detector (Arch Linux)
     run_on:
       - archlinux-test
+      - archlinux-build
     tasks:
-      *race-detector-tasks
+      - ".race"
+      - ".report"
 
   - name: rhel70
     display_name: RHEL 7.0
     expansions:
       build_env: "PATH=/opt/go:$PATH"
     run_on:
+      - rhel70-small
       - rhel70
     tasks:
-      *test-tasks
+      - ".dist"
+      - ".test"
 
-  - name: rhel62
-    display_name: RHEL 6.2
-    run_on:
-      - rhel62-test
-    tasks:
-      *test-tasks
-
-  - name: rhel55
-    display_name: RHEL 5.5 (gccgo)
+  - name: rhel62-gccgo
+    display_name: RHEL 6.2 (gccgo)
     expansions:
-      build_env: "LD_LIBRARY_PATH=/opt/openssl/lib64 PATH=/opt/mongodbtoolchain/v2/bin:$PATH"
+      build_env: "PATH=/opt/mongodbtoolchain/v2/bin:$PATH"
     run_on:
-      - rhel55-test
+      - rhel62-small
     tasks:
-      *test-tasks
+      - ".dist"
+      - ".test"
 
   - name: debian81
     display_name: Debian 8.1
@@ -255,7 +279,8 @@ buildvariants:
     run_on:
       - debian81-test
     tasks:
-      *test-tasks
+      - ".dist"
+      - ".test"
 
   - name: osx
     display_name: OS X 10.10
@@ -264,4 +289,76 @@ buildvariants:
     run_on:
       - osx-1010
     tasks:
-      *test-tasks
+      - ".dist"
+      - ".test"
+
+  # the following targets *just* cross compile the binary for different architectures.
+  - name: solaris
+    display_name: "Solaris (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=amd64 GOOS=solaris"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"
+
+  - name: s390x
+    display_name: "zLinux (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=s390x GOOS=linux"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"
+
+  - name: power
+    display_name: "Linux POWER (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=ppc64le GOOS=linux"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"
+
+  - name: arm
+    display_name: "Linux ARM64 (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=arm64 GOOS=linux"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"
+
+  - name: linux-32
+    display_name: "Linux 32-bit (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=386 GOOS=linux"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"
+
+  - name: windows-64
+    display_name: "Windows 64-bit (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=amd64 GOOS=windows"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"
+
+  - name: windows-32
+    display_name: "Windows 32-bit (cross-compile)"
+    expansions:
+      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
+      xc_env: "GOARCH=386 GOOS=windows"
+    run_on:
+      *generic-linux-distros
+    tasks:
+      - ".dist"

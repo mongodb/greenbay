@@ -43,14 +43,14 @@ func newCompileVS() compiler {
 		registry.ENUMERATE_SUB_KEYS|registry.READ)
 	if err != nil {
 		c.catcher.Add(errors.Wrap(err, "problem reading from registry"))
-		return
+		return nil
 	}
 	defer k.Close()
 
 	installed, err := k.ReadSubKeyNames(-1)
 	if err != nil {
 		c.catcher.Add(errors.Wrap(err, "problem reading subkeys"))
-		return
+		return nil
 	}
 
 	for _, ver := range installed {
@@ -96,10 +96,12 @@ func newCompileVS() compiler {
 func (c *compileVS) findCl(envVars []string) (string, error) {
 	var path string
 
-	for _, v := range c.envVars {
-		if strings.HasPrefix(v, "PATH=") || strings.HasPrefix(v, "Path=") {
-			path = v[5:]
-			break
+	for _, vs := range c.envVars {
+		for _, v := range vs {
+			if strings.HasPrefix(v, "PATH=") || strings.HasPrefix(v, "Path=") {
+				path = v[5:]
+				break
+			}
 		}
 	}
 
@@ -125,10 +127,10 @@ func (c *compileVS) compileOp(filename, version string, cFlags ...string) error 
 		if len(c.versions) == 0 {
 			return errors.Errorf("Visual Studio is not installed on this system")
 		}
-		version = vcVersions[len(c.versions)-1]
+		version = c.versions[len(c.versions)-1]
 	}
 
-	argv := []string{fileName}
+	argv := []string{filename}
 	argv = append(argv, cFlags...)
 
 	envVars, ok := c.envVars[version]
@@ -178,7 +180,7 @@ func (c *compileVS) Compile(testBody string, cFlags ...string) error {
 func (c *compileVS) CompileAndRun(testBody string, cFlags ...string) (string, error) {
 	outputName, sourceName, err := writeTestBody(testBody, "c")
 	if err != nil {
-		return errors.Wrap(err, "problem writing test to file")
+		return "", errors.Wrap(err, "problem writing test to file")
 	}
 
 	defer os.Remove(sourceName)

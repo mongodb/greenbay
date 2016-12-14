@@ -13,4 +13,5 @@ import:
 - package: github.com/pkg/errors
 - package: github.com/ghodss/yaml
 - package: golang.org/x/net
+- package: golang.org/x/sys/windows/registry
 - package: gopkg.in/yaml.v2

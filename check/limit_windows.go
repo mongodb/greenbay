@@ -30,10 +30,10 @@ func irpStackSize(value int) (bool, error) {
 		return false, errors.Wrap(err, "problem getting value of IRPStackSize Value")
 	}
 
-	if irpStackSize != value {
+	if irpStackSize != uint64(value) {
 		return false, errors.Errorf("IRPStackSize should be %d but is %d", value, irpStackSize)
 	}
 
-	return nil
+	return true, nil
 
 }
