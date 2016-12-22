@@ -13,9 +13,17 @@ import (
 // a map of "limit name" to check function.
 
 func limitValueCheckTable() map[string]limitValueCheck {
-	return map[string]limitValueCheck{
+	m := map[string]limitValueCheck{
 		"irp-stack-size": irpStackSize,
 	}
+
+	// we have to define UNIX tests here as "invalid checks" so
+	// windows and unix systems can use the same config
+	for _, name := range []string{"open-files", "address-size"} {
+		m[name] = undefinedLimitCheckFactory(name)
+	}
+
+	return m
 }
 
 func irpStackSize(value int) (bool, error) {

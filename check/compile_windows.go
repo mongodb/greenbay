@@ -16,9 +16,21 @@ import (
 )
 
 func compilerInterfaceFactoryTable() map[string]compilerFactory {
-	return map[string]compilerFactory{
+	m := map[string]compilerFactory{
 		"compile-visual-studio": newCompileVS,
 	}
+
+	// we have to add all UNIX compilers to the test registry so
+	// that we can share configs between platforms with disjoint sets
+	// of registered tests.
+	for _, name := range []string{"compile-gcc-auto",
+		"compile-gcc-system", "compile-toolchain-v2",
+		"compile-toolchain-v1", "compile-toolchain-v0"} {
+
+		m[name] = undefinedCompileCheck(name)
+	}
+
+	return m
 }
 
 type compileVS struct {

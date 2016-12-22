@@ -1,6 +1,8 @@
 package check
 
 import (
+	"runtime"
+
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/amboy/registry"
 	"github.com/pkg/errors"
@@ -46,5 +48,12 @@ func (c *limitCheck) Run() {
 		c.setState(false)
 		c.AddError(errors.Errorf("limit in check %s is incorrect", c.ID()))
 		return
+	}
+}
+
+func undefinedLimitCheckFactory(name string) limitValueCheck {
+	return func(_ int) (bool, error) {
+		return false, errors.Errorf("limit check %s is not defined on this platform (%s)",
+			name, runtime.GOOS())
 	}
 }

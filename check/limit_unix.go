@@ -14,8 +14,9 @@ import (
 
 func limitValueCheckTable() map[string]limitValueCheck {
 	return map[string]limitValueCheck{
-		"open-files":   limitCheckFactory("open-files", syscall.RLIMIT_NOFILE),
-		"address-size": limitCheckFactory("address-size", syscall.RLIMIT_AS),
+		"open-files":     limitCheckFactory("open-files", syscall.RLIMIT_NOFILE),
+		"address-size":   limitCheckFactory("address-size", syscall.RLIMIT_AS),
+		"irp-stack-size": undefinedLimitCheckFactory("irp-stack-size"),
 	}
 }
 
