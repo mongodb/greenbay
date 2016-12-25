@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/tychoish/grip"
 	"github.com/tychoish/grip/level"
-	"github.com/tychoish/grip/send"
 	"github.com/urfave/cli"
 )
 
@@ -22,27 +21,24 @@ func TestMainSuite(t *testing.T) {
 }
 
 func (s *MainSuite) TestLoggingSetupUsingDefaultSender() {
-	err := loggingSetup("test", "info")
-	s.NoError(err)
-	s.Equal(grip.Name(), "test")
+	grip.SetName("foo")
+	s.Equal(grip.Name(), "foo")
 
-	nl, err := send.NewNativeLogger("test", level.Alert, level.Info)
-	s.NoError(err)
-	s.IsType(grip.Sender(), nl)
+	loggingSetup("test", "info")
+	s.Equal(grip.Name(), "test")
 }
 
 func (s *MainSuite) TestLogSetupWithInvalidLevelDoesNotChangeLevel() {
 	// when you specify an invalid level, grip shouldn't change
 	// the level.
 	s.Equal(grip.ThresholdLevel(), level.Info)
-	err := loggingSetup("test", "QUIET")
-	s.NoError(err)
+
+	loggingSetup("test", "QUIET")
 	s.Equal(grip.ThresholdLevel(), level.Info)
 
 	// Following case is just to make sure that normal
 	// setting still works as expected.
-	err = loggingSetup("test", "debug")
-	s.NoError(err)
+	loggingSetup("test", "debug")
 	s.Equal(grip.ThresholdLevel(), level.Debug)
 }
 

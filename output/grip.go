@@ -6,6 +6,7 @@ import (
 	"github.com/tychoish/grip"
 	"github.com/tychoish/grip/level"
 	"github.com/tychoish/grip/message"
+	"github.com/tychoish/grip/send"
 )
 
 // GripOutput provides a ResultsProducer implementation that writes
@@ -35,11 +36,11 @@ func (r *GripOutput) Populate(queue amboy.Queue) error {
 		dur := wu.output.Timing.Start.Sub(wu.output.Timing.End)
 		if wu.output.Passed {
 			r.passedMsgs = append(r.passedMsgs,
-				message.NewFormatedMessage("PASSED: '%s' [time='%s', msg='%s', error='%s']",
+				message.NewFormatted("PASSED: '%s' [time='%s', msg='%s', error='%s']",
 					wu.output.Name, dur, wu.output.Message, wu.output.Error))
 		} else {
 			r.failedMsgs = append(r.passedMsgs,
-				message.NewFormatedMessage("FAILED: '%s' [time='%s', msg='%s', error='%s']",
+				message.NewFormatted("FAILED: '%s' [time='%s', msg='%s', error='%s']",
 					wu.output.Name, dur, wu.output.Message, wu.output.Error))
 		}
 	}
@@ -51,12 +52,11 @@ func (r *GripOutput) Populate(queue amboy.Queue) error {
 // operation. If any tasks failed, this operation returns an error.
 func (r *GripOutput) ToFile(fn string) error {
 	logger := grip.NewJournaler("greenbay")
-	if err := logger.UseFileLogger(fn); err != nil {
+	sender, err := send.NewFileLogger("greenbay", fn, send.LevelInfo{Default: level.Info, Threshold: level.Info})
+	if err != nil {
 		return errors.Wrapf(err, "problem setting up output logger to file '%s'", fn)
 	}
-
-	logger.SetDefaultLevel(level.Info)
-	logger.SetThreshold(level.Info)
+	logger.SetSender(sender)
 
 	r.logResults(logger)
 
@@ -72,12 +72,11 @@ func (r *GripOutput) ToFile(fn string) error {
 // operation. If any tasks failed, this operation returns an error.
 func (r *GripOutput) Print() error {
 	logger := grip.NewJournaler("greenbay")
-	if err := logger.UseNativeLogger(); err != nil {
+	sender, err := send.NewNativeLogger("greenbay", send.LevelInfo{Default: level.Info, Threshold: level.Info})
+	if err != nil {
 		return errors.Wrap(err, "problem setting up logger")
 	}
-
-	logger.SetDefaultLevel(level.Info)
-	logger.SetThreshold(level.Info)
+	logger.SetSender(sender)
 
 	r.logResults(logger)
 
