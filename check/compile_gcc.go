@@ -28,7 +28,7 @@ func compilerInterfaceFactoryTable() map[string]compilerFactory {
 		"compile-toolchain-v0": factory("/opt/mongodbtoolchain/bin/gcc"),
 		// must define all windows compilers here so that
 		// configs can be shared by systems with disjoint sets of tasts.
-		"compile-visual-studio": undefinedLimitCheckFactory("compile-visual-studio"),
+		"compile-visual-studio": undefinedCompileCheckFactory("compile-visual-studio"),
 	}
 }
 

@@ -54,6 +54,6 @@ func (c *limitCheck) Run() {
 func undefinedLimitCheckFactory(name string) limitValueCheck {
 	return func(_ int) (bool, error) {
 		return false, errors.Errorf("limit check %s is not defined on this platform (%s)",
-			name, runtime.GOOS())
+			name, runtime.GOOS)
 	}
 }
