@@ -27,7 +27,7 @@ func compilerInterfaceFactoryTable() map[string]compilerFactory {
 		"compile-gcc-system", "compile-toolchain-v2",
 		"compile-toolchain-v1", "compile-toolchain-v0"} {
 
-		m[name] = undefinedCompileCheck(name)
+		m[name] = undefinedCompileCheckFactory(name)
 	}
 
 	return m
