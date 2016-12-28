@@ -80,7 +80,7 @@ func (c *pythonModuleVersion) Run() {
 
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:]...)
 	versionOut, err := cmd.Output()
-	version := strings.Trim(string(versionOut), "\n ")
+	version := strings.Trim(string(versionOut), "\n\r ")
 	if err != nil {
 		c.setState(false)
 		c.AddError(err)
