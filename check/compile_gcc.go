@@ -66,10 +66,6 @@ func (c compileGCC) Validate() error {
 		return errors.New("no compiler specified")
 	}
 
-	if _, err := os.Stat(c.bin); os.IsNotExist(err) {
-		return errors.Errorf("compiler binary '%s' does not exist", c.bin)
-	}
-
 	return nil
 }
 
