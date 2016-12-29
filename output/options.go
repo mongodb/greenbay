@@ -57,12 +57,24 @@ func (o *Options) GetResultsProducer() (ResultsProducer, error) {
 // structure. ProduceResults returns an error if any of the tests
 // failed in the operation.
 func (o *Options) ProduceResults(q amboy.Queue) error {
+	if q == nil {
+		return errors.New("cannot populate results with a nil queue")
+	}
+
+	return o.CollectResults(q.Results())
+}
+
+// CollectResults takes a channel that produces jobs and produces results
+// according to the options specified in the Options
+// structure. ProduceResults returns an error if any of the tests
+// failed in the operation.
+func (o *Options) CollectResults(jobs <-chan amboy.Job) error {
 	rp, err := o.GetResultsProducer()
 	if err != nil {
 		return errors.Wrap(err, "problem fetching results producer")
 	}
 
-	if err := rp.Populate(q); err != nil {
+	if err := rp.Populate(jobs); err != nil {
 		return errors.Wrap(err, "problem generating results content")
 	}
 

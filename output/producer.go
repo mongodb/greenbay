@@ -12,7 +12,7 @@ type ResultsProducer interface {
 	// greenbay.Checker. Implementations are not required to
 	// de-duplicate tasks in the case that the Populate() method
 	// is called multiple times on
-	Populate(amboy.Queue) error
+	Populate(<-chan amboy.Job) error
 
 	// ToFile takes a string, for a file name, and writes the
 	// results to a file with that name. Returns an error if any

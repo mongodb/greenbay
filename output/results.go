@@ -29,13 +29,12 @@ type Results struct {
 // Populate generates output, based on the content (via the Results()
 // method) of an amboy.Queue instance. All jobs processed by that
 // queue must also implement the greenbay.Checker interface.
-func (r *Results) Populate(queue amboy.Queue) error {
-	out, err := newResultsDocument(queue)
-	if err != nil {
-		return errors.Wrap(err, "problem generating results structure")
-	}
+func (r *Results) Populate(jobs <-chan amboy.Job) error {
+	r.out = &resultsDocument{}
 
-	r.out = out
+	if err := r.out.populate(jobsToCheck(jobs)); err != nil {
+		return errors.Wrap(err, "problem constructing results document")
+	}
 
 	return nil
 }
@@ -86,20 +85,6 @@ type resultsItem struct {
 	Elapsed time.Duration `bson:"elapsed" json:"elapsed" yaml:"elapsed"`
 	Start   time.Time     `bson:"start" json:"start" yaml:"start"`
 	End     time.Time     `bson:"end" json:"end" yaml:"end"`
-}
-
-func newResultsDocument(queue amboy.Queue) (*resultsDocument, error) {
-	if queue == nil {
-		return nil, errors.New("cannot populate results with a nil queue")
-	}
-
-	r := &resultsDocument{}
-
-	if err := r.populate(jobsToCheck(queue.Results())); err != nil {
-		return nil, errors.Wrap(err, "problem constructing results document")
-	}
-
-	return r, nil
 }
 
 // implementation of content generation.

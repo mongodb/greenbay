@@ -13,7 +13,6 @@ import (
 	"github.com/mongodb/amboy/job"
 	"github.com/mongodb/greenbay/check"
 	"github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -22,7 +21,6 @@ type ConfigSuite struct {
 	confFile       string
 	numTestsInFile int
 	conf           *GreenbayTestConfig
-	require        *require.Assertions
 	suite.Suite
 }
 
@@ -31,10 +29,8 @@ func TestConfigSuite(t *testing.T) {
 }
 
 func (s *ConfigSuite) SetupSuite() {
-	s.require = s.Require()
-
 	dir, err := ioutil.TempDir("", uuid.NewV4().String())
-	s.require.NoError(err)
+	s.Require().NoError(err)
 	s.tempDir = dir
 
 	conf := newTestConfig()
@@ -57,11 +53,11 @@ func (s *ConfigSuite) SetupSuite() {
 	}
 
 	dump, err := json.Marshal(conf)
-	s.require.NoError(err)
+	s.Require().NoError(err)
 	fn := filepath.Join(dir, "conf.json")
 	s.confFile = fn
 	err = ioutil.WriteFile(fn, dump, 0644)
-	s.require.NoError(err)
+	s.Require().NoError(err)
 }
 
 func (s *ConfigSuite) SetupTest() {
@@ -69,7 +65,7 @@ func (s *ConfigSuite) SetupTest() {
 }
 
 func (s *ConfigSuite) TearDownSuite() {
-	s.require.NoError(os.RemoveAll(s.tempDir))
+	s.Require().NoError(os.RemoveAll(s.tempDir))
 }
 
 func (s *ConfigSuite) TestTemporyFileConfigIsCorrect() {
@@ -240,5 +236,30 @@ func (s *ConfigSuite) TestBySuiteWithInconsistentData() {
 		s.Error(t.Err)
 		s.Nil(t.Job)
 	}
+}
 
+func (s *ConfigSuite) TestCombinedCheckGenerator() {
+	conf, err := ReadConfig(s.confFile)
+
+	s.NoError(err)
+	s.NotNil(conf)
+	conf.tests = make(map[string]amboy.Job)
+
+	s.Require().True(len(conf.RawTests) >= 2)
+	conf.RawTests[0].Suites = []string{"foo"}
+	conf.RawTests[1].Suites = []string{"bar"}
+
+	var firstTestName string
+	var tests int
+	for range conf.GetAllTests([]string{}, []string{"foo", "bar"}) {
+		tests++
+	}
+	s.Equal(2, tests)
+
+	tests = 0
+	for range conf.GetAllTests([]string{firstTestName}, []string{"one"}) {
+		tests++
+	}
+
+	s.Equal(tests, s.numTestsInFile+1)
 }

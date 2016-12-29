@@ -3,18 +3,15 @@ package operations
 import (
 	"testing"
 
-	"github.com/mongodb/amboy/queue"
 	"github.com/mongodb/greenbay/check"
 	"github.com/mongodb/greenbay/config"
 	"github.com/mongodb/greenbay/output"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/net/context"
 )
 
 type AppSuite struct {
-	app     *GreenbayApp
-	require *require.Assertions
+	app *GreenbayApp
 	suite.Suite
 }
 
@@ -23,7 +20,7 @@ func TestAppSuite(t *testing.T) {
 }
 
 func (s *AppSuite) SetupSuite() {
-	s.require = s.Require()
+
 }
 
 func (s *AppSuite) SetupTest() {
@@ -78,66 +75,10 @@ func (s *AppSuite) TestConsturctorFailsWithEmptyConfPath() {
 	s.Nil(app)
 }
 
-func (s *AppSuite) TestAddSuitesHelperNoopsWithEmptySourceList() {
-	s.Len(s.app.Suites, 0)
-	s.NoError(s.app.addSuites(nil))
-}
-
-func (s *AppSuite) TestAddTestsHelperNoopsWithEmptySourceList() {
-	s.Len(s.app.Tests, 0)
-	s.NoError(s.app.addTests(nil))
-}
-
-func (s *AppSuite) TestAddSuiteHelperErrorsWithNilQueue() {
-	s.app.Suites = []string{"foo", "bar"}
-	s.Error(s.app.addSuites(nil))
-}
-
-func (s *AppSuite) TestAddTestHelperErrorsWithNilQueue() {
-	s.app.Tests = []string{"foo", "bar"}
-	s.Error(s.app.addTests(nil))
-}
-
-func (s *AppSuite) TestAddSuiteHelperErrorsIfQueueIsNotStarted() {
-	s.app.Suites = []string{"foo", "bar"}
-	q := queue.NewLocalUnordered(2)
-
-	s.False(q.Started())
-	s.Error(s.app.addSuites(q))
-}
-
-func (s *AppSuite) TestAddTestHelperErrorsIfQueueIsNotStarted() {
-	s.app.Tests = []string{"foo", "bar"}
-	q := queue.NewLocalUnordered(2)
-
-	s.False(q.Started())
-	s.Error(s.app.addTests(q))
-}
-
-func (s *AppSuite) TestAddSuiteHelperErrorsWithoutValidTests() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	s.app.Suites = []string{"", ""}
-	s.app.Conf = &config.GreenbayTestConfig{}
-	q := queue.NewLocalUnordered(2)
-	s.NoError(q.Start(ctx))
-
-	s.True(q.Started())
-	s.Error(s.app.addSuites(q))
-}
-
-func (s *AppSuite) TestAddTestHelperErrorsWithoutValidTests() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	s.app.Tests = []string{"", ""}
-	s.app.Conf = &config.GreenbayTestConfig{}
-	q := queue.NewLocalUnordered(2)
-	s.NoError(q.Start(ctx))
-
-	s.True(q.Started())
-	s.Error(s.app.addTests(q))
+func (s *AppSuite) TestConstructorFailsWithInvalidOutputConfigurations() {
+	app, err := NewApp("", "", "DOES-NOT-EXIST", true, 3, []string{}, []string{})
+	s.Error(err)
+	s.Nil(app)
 }
 
 // TODO: add tests that exercise successful runs and dispatch actual

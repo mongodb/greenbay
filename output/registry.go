@@ -36,6 +36,10 @@ func init() {
 	AddFactory("log", func() ResultsProducer {
 		return &GripOutput{}
 	})
+
+	AddFactory("json", func() ResultsProducer {
+		return &JSONResults{}
+	})
 }
 
 func (r *resultsFactoryRegistry) add(name string, factory ResultsFactory) {

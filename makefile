@@ -103,7 +103,6 @@ test-%:
 	@grep -s -q -e "^PASS" $(buildDir)/test.$*.out
 coverage-%:
 	@$(MAKE) $(makeArgs) $(buildDir)/coverage.$*.out
-	@grep -s -q -e "^PASS" $(buildDir)/coverage.$*.out
 html-coverage-%:
 	@$(MAKE) $(makeArgs) $(buildDir)/coverage.$*.html
 # end convienence targets

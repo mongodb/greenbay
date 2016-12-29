@@ -43,14 +43,14 @@ type GreenbayApp struct {
 // constructing either the main config or the output
 // configuration objects.
 func NewApp(confPath, outFn, format string, quiet bool, jobs int, suite, tests []string) (*GreenbayApp, error) {
-	conf, err := config.ReadConfig(confPath)
-	if err != nil {
-		return nil, errors.Wrap(err, "problem parsing config file")
-	}
-
 	out, err := output.NewOptions(outFn, format, quiet)
 	if err != nil {
 		return nil, errors.Wrap(err, "problem generating output definition")
+	}
+
+	conf, err := config.ReadConfig(confPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "problem parsing config file")
 	}
 
 	app := &GreenbayApp{
@@ -86,18 +86,22 @@ func (a *GreenbayApp) Run(ctx context.Context) error {
 
 	// begin "real" work
 	start := time.Now()
+	catcher := grip.NewCatcher()
 
-	if err := a.addTests(q); err != nil {
-		return errors.Wrap(err, "problem processing checks from suites")
+	for check := range a.Conf.GetAllTests(a.Tests, a.Suites) {
+		if check.Err != nil {
+			catcher.Add(check.Err)
+			continue
+		}
+		catcher.Add(q.Put(check.Job))
 	}
-
-	if err := a.addSuites(q); err != nil {
-		return errors.Wrap(err, "problem processing checks from suites")
+	if catcher.HasErrors() {
+		return errors.Wrap(catcher.Resolve(), "problem collecting and submitting jobs")
 	}
 
 	stats := q.Stats()
 	grip.Noticef("registered %d jobs, running checks now", stats.Total)
-	q.Wait()
+	amboy.WaitCtxInterval(ctx, q, 10*time.Millisecond)
 
 	grip.Noticef("checks complete in [num=%d, runtime=%s] ", stats.Total, time.Since(start))
 	if err := a.Output.ProduceResults(q); err != nil {
@@ -105,50 +109,4 @@ func (a *GreenbayApp) Run(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-// Helper methods to populate the queue:
-
-func (a *GreenbayApp) addSuites(q amboy.Queue) error {
-	if len(a.Suites) == 0 {
-		return nil
-	}
-
-	if q == nil || !q.Started() {
-		return errors.New("cannot add suites to a nil or unstarted queue")
-	}
-
-	catcher := grip.NewCatcher()
-
-	for check := range a.Conf.TestsForSuites(a.Suites...) {
-		if check.Err != nil {
-			catcher.Add(check.Err)
-			continue
-		}
-		catcher.Add(q.Put(check.Job))
-	}
-
-	return catcher.Resolve()
-}
-
-func (a *GreenbayApp) addTests(q amboy.Queue) error {
-	if len(a.Tests) == 0 {
-		return nil
-	}
-
-	if q == nil || !q.Started() {
-		return errors.New("cannot add tests to a nil or unstarted queue")
-	}
-
-	catcher := grip.NewCatcher()
-
-	for check := range a.Conf.TestsByName(a.Tests...) {
-		if check.Err != nil {
-			catcher.Add(check.Err)
-			continue
-		}
-		catcher.Add(q.Put(check.Job))
-	}
-
-	return catcher.Resolve()
 }

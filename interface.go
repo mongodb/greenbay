@@ -55,20 +55,20 @@ type Checker interface {
 // includes their result status and other metadata that may be useful
 // in reporting data to users.
 type CheckOutput struct {
-	Completed bool
-	Passed    bool
-	Check     string
-	Name      string
-	Message   string
-	Error     string
-	Suites    []string
-	Timing    TimingInfo
+	Completed bool       `bson:"completed" json:"completed" yaml:"completed"`
+	Passed    bool       `bson:"passed" json:"passed" yaml:"passed"`
+	Check     string     `bson:"check_type" json:"check_type" yaml:"check_type"`
+	Name      string     `bson:"name" json:"name" yaml:"name"`
+	Message   string     `bson:"message,omitempty" json:"message,omitempty" yaml:"message,omitempty"`
+	Error     string     `bson:"error,omitempty" json:"error,omitempty" yaml:"error,omitempty"`
+	Suites    []string   `bson:"suites" json:"suites" yaml:"suites"`
+	Timing    TimingInfo `bson:"timing" json:"timing" yaml:"timing"`
 }
 
 // TimingInfo tracks the start and end time for a task.
 type TimingInfo struct {
-	Start time.Time
-	End   time.Time
+	Start time.Time `bson:"start_time" json:"start_time" yaml:"start_time"`
+	End   time.Time `bson:"end_time" json:"end_time" yaml:"end_time"`
 }
 
 // Duration returns a time.Duration for the timing information stored

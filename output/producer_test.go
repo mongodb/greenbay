@@ -85,7 +85,8 @@ func (s *ProducerSuite) SetupSuite() {
 
 		s.NoError(s.queue.Put(check))
 	}
-	s.queue.Wait()
+
+	amboy.Wait(s.queue)
 }
 
 func (s *ProducerSuite) SetupTest() {
@@ -100,7 +101,7 @@ func (s *ProducerSuite) TearDownSuite() {
 // Test cases:
 
 func (s *ProducerSuite) TestPopulateOperationDoNotErrorWithBasicTasks() {
-	s.NoError(s.results.Populate(s.queue))
+	s.NoError(s.results.Populate(s.queue.Results()))
 }
 
 func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
@@ -110,7 +111,7 @@ func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
 		task.Base.WasSuccessful = false
 	}
 
-	s.NoError(s.results.Populate(s.queue))
+	s.NoError(s.results.Populate(s.queue.Results()))
 
 	grip.Alert("printing test results")
 	s.Error(s.results.Print())
@@ -125,7 +126,7 @@ func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
 }
 
 func (s *ProducerSuite) TestPrintMethodReturnsNoErrorIfAllOperationsAreSuccessful() {
-	s.NoError(s.results.Populate(s.queue))
+	s.NoError(s.results.Populate(s.queue.Results()))
 
 	grip.Alert("printing test results")
 	s.NoError(s.results.Print())
@@ -133,7 +134,7 @@ func (s *ProducerSuite) TestPrintMethodReturnsNoErrorIfAllOperationsAreSuccessfu
 }
 
 func (s *ProducerSuite) TestToFileMethodReturnsNoErrorIfAllOperationsAreSuccessful() {
-	s.NoError(s.results.Populate(s.queue))
+	s.NoError(s.results.Populate(s.queue.Results()))
 
 	err := s.results.ToFile(filepath.Join(s.tmpDir, "two"))
 	s.NoError(err)
@@ -148,12 +149,12 @@ func (s *ProducerSuite) TestWithQueueAndInvalidJobs() {
 	s.require.NoError(q.Start(ctx))
 
 	s.NoError(q.Put(job.NewShellJob("echo foo", "")))
-	q.Wait()
-	s.Error(s.results.Populate(q))
+	amboy.Wait(q)
+	s.Error(s.results.Populate(q.Results()))
 }
 
 func (s *ProducerSuite) TestToFileMethodShouldFailOnNonWriteableFiles() {
-	s.NoError(s.results.Populate(s.queue))
+	s.NoError(s.results.Populate(s.queue.Results()))
 
 	fn := filepath.Join(s.tmpDir, "foo", "three")
 	_, err := os.Stat(fn)

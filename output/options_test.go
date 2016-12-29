@@ -50,7 +50,7 @@ func (s *OptionsSuite) SetupSuite() {
 		s.NoError(s.queue.Put(check))
 	}
 	s.Equal(num, s.queue.Stats().Total)
-	s.queue.Wait()
+	amboy.Wait(s.queue)
 }
 
 func (s *OptionsSuite) SetupTest() {
