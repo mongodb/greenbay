@@ -76,7 +76,10 @@ func (r *GripOutput) Print() error {
 	if err != nil {
 		return errors.Wrap(err, "problem setting up logger")
 	}
-	logger.SetSender(sender)
+
+	if err := logger.SetSender(sender); err != nil {
+		return errors.Wrap(err, "problem configuring logger")
+	}
 
 	r.logResults(logger)
 
