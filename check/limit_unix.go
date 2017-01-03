@@ -3,6 +3,7 @@
 package check
 
 import (
+	"runtime"
 	"syscall"
 
 	"github.com/pkg/errors"
@@ -13,22 +14,36 @@ import (
 // a map of "limit name" to check function.
 
 func limitValueCheckTable() map[string]limitValueCheck {
+	var addressLimit uint64
+
+	if runtime.GOARCH == 386 {
+		addressLimit = 2147483600
+	} else {
+		addressLimit = 18446744073709551000
+	}
+
 	return map[string]limitValueCheck{
-		"open-files":     limitCheckFactory("open-files", syscall.RLIMIT_NOFILE),
-		"address-size":   limitCheckFactory("address-size", syscall.RLIMIT_AS),
+		"open-files":     limitCheckFactory("open-files", syscall.RLIMIT_NOFILE, 128000),
+		"address-size":   limitCheckFactory("address-size", syscall.RLIMIT_AS, addressLimit),
 		"irp-stack-size": undefinedLimitCheckFactory("irp-stack-size"),
 	}
 }
 
-func limitCheckFactory(name string, resource int) limitValueCheck {
+func limitCheckFactory(name string, resource int, max uint64) limitValueCheck {
 	return func(value int) (bool, error) {
 		limits := &syscall.Rlimit{}
+
 		err := syscall.Getrlimit(resource, limits)
 		if err != nil {
 			return false, errors.Wrapf(err, "problem finding %s limit", name)
 		}
 
-		if limits.Max < uint64(value) {
+		expected := unit64(value)
+		if expected < 0 {
+			expected = max
+		}
+
+		if limits.Max < expected {
 			return false, errors.Errorf("%s limit is %d which is less than %d",
 				name, limits.Max, value)
 		}
