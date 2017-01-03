@@ -15,11 +15,6 @@ func TestScriptCompilerImplementation(t *testing.T) {
 	assert.Equal("", check.bin)
 	assert.Error(check.Validate())
 
-	for _, py := range []string{"none", "does-not-exist"} {
-		check.bin = py
-		assert.Error(check.Validate())
-	}
-
 	check.bin = "/usr/bin/python"
 	assert.NoError(check.Validate())
 
