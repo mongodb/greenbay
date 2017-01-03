@@ -4,7 +4,6 @@ package check
 
 import (
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -31,7 +30,7 @@ func irpStackSize(value int) (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "problem opening registry key")
 	}
-	defer grip.Warning(key.Close())
+	defer key.Close()
 
 	irpStackSize, _, err := key.GetIntegerValue("IRPStackSize")
 	if err != nil {
