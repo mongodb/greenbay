@@ -15,6 +15,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+// GreenbayClient provides all of the core greenbay operations by
+// doing requests against a remote service, provided by GreenbayService.
 type GreenbayClient struct {
 	Conf   *config.GreenbayTestConfig
 	Output *output.Options
@@ -23,6 +25,9 @@ type GreenbayClient struct {
 	Suites []string
 }
 
+// NewClient constructs a greenbay client, with a signature that is
+// roughly analogous to the NewApp constructor used for local greenbay
+// operations.
 func NewClient(confPath, host string, port int, outFn, format string, quiet bool, suite, tests []string) (*GreenbayClient, error) {
 	out, err := output.NewOptions(outFn, format, quiet)
 	if err != nil {
@@ -50,6 +55,9 @@ func NewClient(confPath, host string, port int, outFn, format string, quiet bool
 	return client, nil
 }
 
+// Run executes all greenbay checks on the remote system. Currently
+// waits for all checks to complete for the default (20 seconds,) or
+// until the context expires. Control the timeout using the context.
 func (c *GreenbayClient) Run(ctx context.Context) error {
 	if c.Conf == nil || c.Output == nil {
 		return errors.New("GreenbayApp is not correctly constructed:" +

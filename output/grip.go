@@ -22,7 +22,7 @@ type GripOutput struct {
 func (r *GripOutput) Populate(jobs <-chan amboy.Job) error {
 	catcher := grip.NewCatcher()
 
-	r.useJsonLoggers = false
+	r.useJSONLoggers = false
 
 	for wu := range jobsToCheck(jobs) {
 		if wu.err != nil {
@@ -55,7 +55,7 @@ type JSONResults struct {
 // interface. Returns an error if there are any invalid jobs.
 func (r *JSONResults) Populate(jobs <-chan amboy.Job) error {
 	catcher := grip.NewCatcher()
-	r.useJsonLoggers = true
+	r.useJSONLoggers = true
 
 	for wu := range jobsToCheck(jobs) {
 		if wu.err != nil {
@@ -72,7 +72,7 @@ func (r *JSONResults) Populate(jobs <-chan amboy.Job) error {
 }
 
 type gripOutputData struct {
-	useJsonLoggers bool
+	useJSONLoggers bool
 	passedMsgs     []message.Composer
 	failedMsgs     []message.Composer
 }
@@ -84,7 +84,7 @@ func (r *gripOutputData) ToFile(fn string) error {
 	var err error
 	logger := grip.NewJournaler("greenbay")
 
-	if r.useJsonLoggers {
+	if r.useJSONLoggers {
 		sender, err = send.NewJSONFileLogger("greenbay", fn, send.LevelInfo{Default: level.Info, Threshold: level.Info})
 	} else {
 		sender, err = send.NewFileLogger("greenbay", fn, send.LevelInfo{Default: level.Info, Threshold: level.Info})
@@ -94,7 +94,9 @@ func (r *gripOutputData) ToFile(fn string) error {
 		return errors.Wrapf(err, "problem setting up output logger to file '%s'", fn)
 	}
 
-	logger.SetSender(sender)
+	if err := logger.SetSender(sender); err != nil {
+		return errors.Wrap(err, "problem configuring logger")
+	}
 
 	r.logResults(logger)
 
@@ -113,7 +115,7 @@ func (r *gripOutputData) Print() error {
 	var sender send.Sender
 	var err error
 
-	if r.useJsonLoggers {
+	if r.useJSONLoggers {
 		sender, err = send.NewJSONConsoleLogger("greenbay", send.LevelInfo{Default: level.Info, Threshold: level.Info})
 	} else {
 		sender, err = send.NewNativeLogger("greenbay", send.LevelInfo{Default: level.Info, Threshold: level.Info})

@@ -120,6 +120,7 @@ vendor-deps:$(vendorDeps)
 -include $(buildDir)/makefile.vendor
 nestedVendored := vendor/github.com/tychoish/grip
 nestedVendored += vendor/github.com/mongodb/amboy
+nestedVendored += vendor/github.com/mongodb/amboy/vendor/github.com/tychoish/gimlet
 nestedVendored := $(foreach project,$(nestedVendored),$(project)/build/vendor)
 $(buildDir)/makefile.vendor:$(buildDir)/render-gopath makefile
 	@mkdir -p $(buildDir)
@@ -137,7 +138,7 @@ change-go-version:
 	@$(MAKE) $(makeArgs) vendor > /dev/null 2>&1
 vendor:$(buildDir)/vendor/src
 	@$(MAKE) $(makeArgs) -C vendor/github.com/tychoish/grip $@
-	@-$(MAKE) $(makeArgs) -k -C vendor/github.com/mongodb/amboy $@
+	@$(MAKE) $(makeArgs) -k -C vendor/github.com/mongodb/amboy $@
 $(buildDir)/vendor/src:$(buildDir)/make-vendor $(buildDir)/render-gopath
 	@./$(buildDir)/make-vendor
 #   targets to build the small programs used to support vendoring.
