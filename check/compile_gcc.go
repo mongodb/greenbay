@@ -77,9 +77,11 @@ func (c compileGCC) Compile(testBody string, cFlags ...string) error {
 	}
 
 	defer grip.CatchWarning(os.Remove(outputName))
+	argv := []string{"-Werror", "-o", outputName, "-c", sourceName}
+	argv = append(argv, cFlags...)
 
-	cmd := exec.Command(c.bin, "-Werror", "-o", outputName, "-c", sourceName)
-	grip.Infof("running build command: %s", strings.Join(cmd.Args, " "))
+	cmd := exec.Command(c.bin, argv...)
+	grip.Infof("running build command: %s %s", c.bin, strings.Join(cmd.Args, " "))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "problem compiling test body: %s", string(output))
@@ -96,12 +98,11 @@ func (c compileGCC) CompileAndRun(testBody string, cFlags ...string) (string, er
 
 	defer grip.CatchWarning(os.Remove(outputName))
 
-	argv := []string{"-Werror", "-o", outputName}
-	argv = append(argv, sourceName)
+	argv := []string{"-Werror", "-o", outputName, sourceName}
 	argv = append(argv, cFlags...)
 
 	cmd := exec.Command(c.bin, argv...)
-	grip.Infof("running build command: %s", strings.Join(cmd.Args, " "))
+	grip.Infof("running build command: %s %s", c.bin, strings.Join(cmd.Args, " "))
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return string(out), errors.Wrap(err, "problem compiling test")
