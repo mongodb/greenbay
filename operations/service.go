@@ -10,13 +10,17 @@ type GreenbayService struct {
 	service *rest.Service
 }
 
-func NewService(port int) (*GreenbayService, error) {
+func NewService(host string, port int) (*GreenbayService, error) {
 	s := &GreenbayService{
 		// this operation loads all job instance names.
 		service: rest.NewService(),
 	}
 
 	if err := s.service.App().SetPort(port); err != nil {
+		return nil, errors.Wrap(err, "problem constructing greenbay service")
+	}
+
+	if err := s.service.App().SetHost(host); err != nil {
 		return nil, errors.Wrap(err, "problem constructing greenbay service")
 	}
 

@@ -199,6 +199,12 @@ func service() cli.Command {
 				Usage: "http port to run service on",
 				Value: 3000,
 			},
+			cli.StringFlag{
+				Name: "host",
+				Usage: fmt.Sprintln("host for the remote greenbay instance. ",
+					"Defaults to '' which listens on all ports."),
+				Value: "",
+			},
 			cli.IntFlag{
 				Name:  "cache",
 				Usage: "number of jobs to store",
@@ -225,7 +231,7 @@ func service() cli.Command {
 			ctx := context.Background()
 			info := rest.ServiceInfo{QueueSize: c.Int("cache"), NumWorkers: c.Int("jobs")}
 
-			s, err := operations.NewService(c.Int("port"))
+			s, err := operations.NewService(c.String("host"), c.Int("port"))
 			grip.CatchEmergencyFatal(err)
 
 			grip.Info("starting greenbay workers")
