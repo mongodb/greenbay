@@ -16,7 +16,7 @@ import (
 func limitValueCheckTable() map[string]limitValueCheck {
 	var addressLimit uint64
 
-	if runtime.GOARCH == 386 {
+	if runtime.GOARCH == "386" {
 		addressLimit = 2147483600
 	} else {
 		addressLimit = 18446744073709551000
@@ -38,7 +38,7 @@ func limitCheckFactory(name string, resource int, max uint64) limitValueCheck {
 			return false, errors.Wrapf(err, "problem finding %s limit", name)
 		}
 
-		expected := unit64(value)
+		expected := uint64(value)
 		if expected < 0 {
 			expected = max
 		}

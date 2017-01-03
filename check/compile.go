@@ -3,6 +3,7 @@ package check
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 
@@ -79,7 +80,9 @@ func registerCompileChecks() {
 }
 
 type compileCheck struct {
-	Source        string `bson:"source" json:"source" yaml:"source"`
+	Source        string   `bson:"source" json:"source" yaml:"source"`
+	Cflags        []string `bson:"cflags" json:"cflags" yaml:"cflags"`
+	CflagsCommand string   `bson:"cflags_command" json:"cflags_command" yaml:"cflags_command"`
 	*Base         `bson:"metadata" json:"metadata" yaml:"metadata"`
 	shouldRunCode bool
 	compiler      compiler
@@ -97,14 +100,30 @@ func (c *compileCheck) Run() {
 		return
 	}
 
+	cflags := []string{}
+	if c.CflagsCommand != "" {
+		output, err := exec.Command("net-snmp-config", "--agent-libs").CombinedOutput()
+		if err != nil {
+			c.setState(false)
+			c.AddError(err)
+			return
+		}
+
+		cflags = append(cflags, strings.Split(strings.TrimSpace(string(output)), " ")...)
+	}
+
+	if len(c.Cflags) >= 1 {
+		cflags = append(cflags, c.Cflags...)
+	}
+
 	if c.shouldRunCode {
-		if output, err := c.compiler.CompileAndRun(c.Source); err != nil {
+		if output, err := c.compiler.CompileAndRun(c.Source, cflags...); err != nil {
 			c.setState(false)
 			c.AddError(err)
 			c.setMessage(output)
 		}
 	} else {
-		if err := c.compiler.Compile(c.Source); err != nil {
+		if err := c.compiler.Compile(c.Source, cflags...); err != nil {
 			c.setState(false)
 			c.AddError(err)
 		}

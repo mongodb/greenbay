@@ -14,14 +14,14 @@ import (
 func TestLimitCheckFactoryErrorConditions(t *testing.T) {
 	assert := assert.New(t)
 	checks := []limitValueCheck{
-		limitCheckFactory("a", -1000000000000000000),
-		limitCheckFactory("d", -1),
+		limitCheckFactory("a", -1000000000000000000, 10),
+		limitCheckFactory("d", -1, 10),
 	}
 
 	if runtime.GOOS == "darwin" {
 		checks = append(checks,
-			limitCheckFactory("b", syscall.RLIMIT_CPU),
-			limitCheckFactory("c", 0))
+			limitCheckFactory("b", syscall.RLIMIT_CPU, 10),
+			limitCheckFactory("c", 0, 10))
 	}
 
 	for idx, c := range checks {
