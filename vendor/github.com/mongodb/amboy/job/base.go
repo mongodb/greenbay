@@ -42,6 +42,7 @@ type Base struct {
 
 	dep   dependency.Manager
 	mutex sync.RWMutex
+	// adds common priority tracking.
 }
 
 ////////////////////////////////////////////////////////////////////////
