@@ -69,21 +69,18 @@ func newCompileVS() compiler {
 		pKeyname := fmt.Sprintf("%s\\%s\\Setup\\VC", vcKeyName, ver)
 		subKey, err := registry.OpenKey(registry.LOCAL_MACHINE, pKeyname, registry.QUERY_VALUE)
 		if err != nil {
-			c.catcher.Add(err)
 			continue
 		}
 		defer subKey.Close()
 
 		pDir, _, err := subKey.GetStringValue("ProductDir")
 		if err != nil {
-			c.catcher.Add(err)
 			continue
 		}
 
 		fullScript := fmt.Sprintf(`%svcvarsall.bat`, pDir)
 		envData, err := exec.Command("cmd.exe", "/C", fullScript, runtime.GOARCH, "&", "set").CombinedOutput()
 		if err != nil {
-			c.catcher.Add(err)
 			continue
 		}
 
