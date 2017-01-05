@@ -10,36 +10,48 @@ import (
 )
 
 func goCompilerIterfaceFactoryTable() map[string]compilerFactory {
-	factory := func(path string) compilerFactory {
+	systemPath := os.Getenv("PATH")
+
+	factory := func(path string, envPath string) compilerFactory {
 		return func() compiler {
-			return compileGolang{
+			c := compileGolang{
 				bin: path,
 			}
+
+			if envPath != "" {
+				c.path = "PATH=" + strings.Join([]string{envPath, systemPath}, string(os.PathListSeparator))
+			}
+
+			return c
 		}
 	}
 
 	return map[string]compilerFactory{
 		"compile-go-auto":            goCompilerAuto,
-		"compile-opt-go-default":     factory("/opt/go/bin/go"),
-		"compile-toolchain-gccgo-v2": factory("/opt/mongodbtoolchain/v2/bin/go"),
-		"compile-usr-local-go":       factory("/usr/local/go"),
-		"compile-user-local-go":      factory("/usr/bin/go"),
+		"compile-opt-go-default":     factory("/opt/go/bin/go", ""),
+		"compile-toolchain-gccgo-v2": factory("/opt/mongodbtoolchain/v2/bin/go", "/opt/mongodbtoolchain/v2/bin"),
+		"compile-usr-local-go":       factory("/usr/local/go", ""),
+		"compile-user-local-go":      factory("/usr/bin/go", ""),
 	}
 }
 
 func goCompilerAuto() compiler {
-	paths := []string{
-		"/opt/go/bin/go",
-		"/opt/mongodbtoolchain/v2/bin/go",
-		"/usr/bin/go",
-		"/usr/local/go/bin/go",
-		"/usr/local/bin/go",
+	paths := [][]string{
+		[]string{"/opt/go/bin/go", ""},
+		[]string{"/opt/mongodbtoolchain/v2/bin/go", "/opt/mongodbtoolchain/v2/bin"},
+		[]string{"/usr/bin/go", ""},
+		[]string{"/usr/local/go/bin/go", ""},
+		[]string{"/usr/local/bin/go", ""},
 	}
 	c := compileGolang{}
 
 	for _, path := range paths {
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			c.bin = path
+		if _, err := os.Stat(path[0]); !os.IsNotExist(err) {
+			c.bin = path[0]
+			if path[1] != "" {
+				c.path = path[1]
+
+			}
 			break
 		}
 	}
@@ -52,7 +64,8 @@ func goCompilerAuto() compiler {
 }
 
 type compileGolang struct {
-	bin string
+	path string
+	bin  string
 }
 
 func (c compileGolang) Validate() error {
@@ -74,6 +87,10 @@ func (c compileGolang) Compile(testBody string, _ ...string) error {
 	}
 
 	cmd := exec.Command(c.bin, "build", source)
+	if c.path != "" {
+		cmd.Env = []string{c.path}
+	}
+
 	grip.Infof("running build command: %s", cmd.Args)
 
 	out, err := cmd.CombinedOutput()
