@@ -3,30 +3,23 @@
 package check
 
 import (
-	"fmt"
-	"runtime"
-	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLimitCheckFactoryErrorConditions(t *testing.T) {
+func TestLimitCheckFactoryNegativeValue(t *testing.T) {
 	assert := assert.New(t)
 	checks := []limitValueCheck{
-		limitCheckFactory("a", -1000000000000000000, 10),
-		limitCheckFactory("d", -1, 10),
+		limitCheckFactory("a", 0, 0),
+		limitCheckFactory("b", 0, 10),
+		limitCheckFactory("c", 0, 100),
+		limitCheckFactory("d", 0, 1000),
+		limitCheckFactory("e", 0, 999999),
 	}
-
-	if runtime.GOOS == "darwin" {
-		checks = append(checks,
-			limitCheckFactory("b", syscall.RLIMIT_CPU, 10),
-			limitCheckFactory("c", 0, 10))
-	}
-
-	for idx, c := range checks {
-		result, err := c(-idx)
-		assert.Error(err, fmt.Sprintf("%+v: %d", err, idx))
-		assert.False(result)
+	for _, c := range checks {
+		result, err := c(-1)
+		assert.NoError(err)
+		assert.True(result)
 	}
 }

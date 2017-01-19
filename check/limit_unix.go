@@ -39,7 +39,7 @@ func limitCheckFactory(name string, resource int, max uint64) limitValueCheck {
 		}
 
 		expected := uint64(value)
-		if expected < 0 {
+		if value < 0 {
 			expected = max
 		}
 
