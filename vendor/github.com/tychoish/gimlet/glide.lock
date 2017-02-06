@@ -1,0 +1,23 @@
+hash: 0c38d4375fc2bd53de9c9aeac46d804a7f924334489936cca6f3702b086c483f
+updated: 2016-10-20T15:36:36.888753206-04:00
+imports:
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: 392c28fe23e1c45ddba891b0320b3b5df220beea
+- name: github.com/phyber/negroni-gzip
+  version: 13f05ed68248e012fcc773ecd829abcc0bb3abd8
+  subpackages:
+  - gzip
+- name: github.com/tychoish/grip
+  version: 0ed407197c91ff0f63c91eb7e385d5dc6175918e
+  subpackages:
+  - level
+  - logging
+  - send
+  - message
+- name: github.com/tylerb/graceful
+  version: 50a48b6e73fcc75b45e22c05b79629a67c79e938
+- name: github.com/urfave/negroni
+  version: 3f7ce7b928e14ff890b067e5bbbc80af73690a9c
+devImports: []
