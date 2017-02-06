@@ -9,5 +9,5 @@ import (
 
 func setupSystemdLogging() send.Sender {
 	grip.Warning("systemd logging is not supported on this platform, falling back to stdout logging.")
-	return send.NewNative()
+	return send.MakeNative()
 }

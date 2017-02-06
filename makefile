@@ -119,8 +119,8 @@ vendor-deps:$(vendorDeps)
 #   for go1.4, we can delete most of this.
 -include $(buildDir)/makefile.vendor
 nestedVendored := vendor/github.com/tychoish/grip
+nestedVendored += vendor/github.com/tychoish/gimlet
 nestedVendored += vendor/github.com/mongodb/amboy
-nestedVendored += vendor/github.com/mongodb/amboy/vendor/github.com/tychoish/gimlet
 nestedVendored := $(foreach project,$(nestedVendored),$(project)/build/vendor)
 $(buildDir)/makefile.vendor:$(buildDir)/render-gopath makefile
 	@mkdir -p $(buildDir)
@@ -132,6 +132,10 @@ vendor-clean:
 	rm -rf vendor/github.com/stretchr/testify/vendor/
 	rm -rf vendor/github.com/mongodb/amboy/vendor/github.com/tychoish/grip/
 	rm -rf vendor/github.com/mongodb/amboy/vendor/golang.org/x/net/
+	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/stretchr/
+	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/davecgh/
+	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/pmezard/
+	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/tychoish/grip/
 	find vendor/ -name "*.gif" -o -name "*.gz" -o -name "*.png" -o -name "*.ico" -o -name "*testdata*"| xargs rm -rf
 change-go-version:
 	rm -rf $(buildDir)/make-vendor $(buildDir)/render-gopath

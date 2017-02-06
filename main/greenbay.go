@@ -224,6 +224,10 @@ func service() cli.Command {
 				Name:  "file, f",
 				Usage: "specify the file to write the log to, for file-based output methods",
 			},
+			cli.BoolFlag{
+				Name:  "disableStats",
+				Usage: "disable the sysinfo and process tree stats endpoints",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			grip.CatchEmergencyFatal(operations.SetupLogging(c.String("logOutput"), c.String("file")))
@@ -233,6 +237,8 @@ func service() cli.Command {
 
 			s, err := operations.NewService(c.String("host"), c.Int("port"))
 			grip.CatchEmergencyFatal(err)
+
+			s.DisableStats = c.Bool("disableStats")
 
 			grip.Info("starting greenbay workers")
 			grip.CatchEmergencyFatal(s.Open(ctx, info))

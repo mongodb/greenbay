@@ -15,7 +15,7 @@ type jsonOutput struct {
 
 func (o *jsonOutput) Raw() interface{} { return o.output }
 func (o *jsonOutput) Loggable() bool   { return true }
-func (o *jsonOutput) Resolve() string {
+func (o *jsonOutput) String() string {
 	out, err := json.Marshal(o)
 	if err != nil {
 		return fmt.Sprintf("error processing result for %s (%+v): %+v",

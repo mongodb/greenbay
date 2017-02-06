@@ -16,7 +16,9 @@ func SetupLogging(format string, fileName string) error {
 
 	switch format {
 	case "stdout":
-		sender = send.NewNative()
+		sender = send.MakeNative()
+	case "stderr":
+		sender = send.MakeErrorLogger()
 	case "file":
 		sender, err = send.MakeFileLogger(fileName)
 	case "json-stdout":
@@ -29,7 +31,7 @@ func SetupLogging(format string, fileName string) error {
 		sender = setupSyslogLogging()
 	default:
 		grip.Warningf("no supported output format '%s' writing log messages to standard output", format)
-		sender = send.NewNative()
+		sender = send.MakeNative()
 	}
 
 	if err != nil {

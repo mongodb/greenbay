@@ -29,3 +29,5 @@ imports:
   version: bea76d6a4713e18b7f5321a2b020738552def3ea
 - name: golang.org/x/sys/windows/registry
   version: 16e60ce6821cc44d9dc924a9f4866ad6ca076ebf
+- name: github.com/tychoish/gimlet
+  version: 1a878ce7872325f1a383629de732b96eb0c1089c
