@@ -9,5 +9,5 @@ import (
 
 func setupSyslogLogging() send.Sender {
 	grip.Warning("syslog is not supported on this platform, falling back to stdout logging.")
-	return send.NewNative()
+	return send.MakeNative()
 }
