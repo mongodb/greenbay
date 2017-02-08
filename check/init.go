@@ -17,11 +17,12 @@ func init() {
 		"none": GroupRequirements{None: true},
 	}
 
-	registerPackageChecks()      // from package.go
-	registerPackageGroupChecks() // from package_group.go
-	registerFileGroupChecks()    // from file_group_exists.go
-	registerCommandGroupChecks() // from command_group.go
-	registerSystemLimitChecks()  // from limit.go
-	registerProgramChecks()      // from program.go
-	registerCompileChecks()      // from compile.go
+	registerPackageChecks()       // from package.go
+	registerPackageGroupChecks()  // from package_group.go
+	registerFileGroupChecks()     // from file_group_exists.go
+	registerCommandGroupChecks()  // from command_group.go
+	registerSystemLimitChecks()   // from limit.go
+	registerProgramChecks()       // from program.go
+	registerProgramReturnChecks() // from program_return.go
+	registerCompileChecks()       // from compile.go
 }

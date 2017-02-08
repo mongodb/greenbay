@@ -83,7 +83,7 @@ func (c *GreenbayTestConfig) parseTests() error {
 			continue
 		}
 
-		grip.Infoln("added test named:", msg.Name, "type:", testJob.Name())
+		grip.Debugln("added test named:", msg.Name, "type:", testJob.Name())
 	}
 
 	return catcher.Resolve()
