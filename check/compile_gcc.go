@@ -115,5 +115,5 @@ func (c compileGCC) CompileAndRun(testBody string, cFlags ...string) (string, er
 		return string(out), errors.Wrap(err, "problem running test program")
 	}
 
-	return strings.Trim(string(out), "\t\n "), nil
+	return strings.Trim(string(out), "\r\t\n "), nil
 }

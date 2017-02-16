@@ -116,6 +116,6 @@ func (c compileGolang) CompileAndRun(testBody string, _ ...string) (string, erro
 		return output, errors.Wrapf(err, "problem running go program: %s", output)
 	}
 
-	output = strings.Trim(output, "\t\n ")
+	output = strings.Trim(output, "\r\t\n ")
 	return output, nil
 }

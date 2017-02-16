@@ -103,5 +103,5 @@ func (c compileScript) CompileAndRun(testBody string, _ ...string) (string, erro
 		return output, errors.Wrapf(err, "problem running test script %s", sourceName)
 	}
 
-	return strings.Trim(output, "\n \t"), nil
+	return strings.Trim(output, "\r\t\n "), nil
 }

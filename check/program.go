@@ -55,7 +55,7 @@ func (c *programOutputCheck) Run() {
 		return
 	}
 
-	c.ExpectedOutput = strings.Trim(c.ExpectedOutput, "\n\t ")
+	c.ExpectedOutput = strings.Trim(c.ExpectedOutput, "\r\t\n ")
 
 	output, err := c.compiler.CompileAndRun(c.Source)
 	if err != nil {

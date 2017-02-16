@@ -213,6 +213,6 @@ func (c *compileVS) CompileAndRun(testBody string, cFlags ...string) (string, er
 		return output, errors.Wrap(err, "problem running test program")
 	}
 
-	output = strings.Trim(output, "\t\n ")
+	output = strings.Trim(output, "\r\t\n ")
 	return output, nil
 }

@@ -18,7 +18,7 @@ func packageCheckerFactory(args []string) packageChecker {
 		localArgs := append(args, name)
 
 		out, err := exec.Command(localArgs[0], localArgs[1:]...).CombinedOutput()
-		output := strings.Trim(string(out), "\n\t ")
+		output := strings.Trim(string(out), "\r\t\n ")
 
 		if err != nil {
 			return false, fmt.Sprintf("%s package '%s' is not installed (%s) (%+v): %s",
