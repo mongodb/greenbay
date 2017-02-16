@@ -94,7 +94,7 @@ $(buildDir)/dist.tar.gz:$(buildDir)/$(name)
 
 # convenience targets for runing tests and coverage tasks on a
 # specific package.
-makeArgs := --no-print-directory
+# makeArgs := --no-print-directory
 race-%:
 	@$(MAKE) $(makeArgs) $(buildDir)/race.$*.out
 	@grep -s -q -e "^PASS" $(buildDir)/race.$*.out
@@ -141,7 +141,8 @@ change-go-version:
 	rm -rf $(buildDir)/make-vendor $(buildDir)/render-gopath
 	@$(MAKE) $(makeArgs) vendor > /dev/null 2>&1
 vendor:$(buildDir)/vendor/src
-	@$(MAKE) $(makeArgs) -C vendor/github.com/tychoish/grip $@
+	@$(MAKE) $(makeArgs) -k -C vendor/github.com/tychoish/grip $@
+	@$(MAKE) $(makeArgs) -k -C vendor/github.com/tychoish/gimlet $@
 	@$(MAKE) $(makeArgs) -k -C vendor/github.com/mongodb/amboy $@
 $(buildDir)/vendor/src:$(buildDir)/make-vendor $(buildDir)/render-gopath
 	@./$(buildDir)/make-vendor
