@@ -94,7 +94,7 @@ func printTestResult(w io.Writer, check greenbay.CheckOutput) bool {
 		fmt.Fprintln(w, "    error:", check.Error)
 	}
 
-	dur := check.Timing.Start.Sub(check.Timing.End)
+	dur := check.Timing.End.Sub(check.Timing.Start)
 
 	if check.Passed {
 		fmt.Fprintf(w, "--- PASS: %s (%s)\n", check.Name, dur)

@@ -74,5 +74,5 @@ type TimingInfo struct {
 // Duration returns a time.Duration for the timing information stored
 // in the TimingInfo object.
 func (t TimingInfo) Duration() time.Duration {
-	return t.Start.Sub(t.End)
+	return t.End.Sub(t.Start)
 }

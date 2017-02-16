@@ -30,7 +30,7 @@ func (r *GripOutput) Populate(jobs <-chan amboy.Job) error {
 			continue
 		}
 
-		dur := wu.output.Timing.Start.Sub(wu.output.Timing.End)
+		dur := wu.output.Timing.End.Sub(wu.output.Timing.Start)
 		if wu.output.Passed {
 			r.passedMsgs = append(r.passedMsgs,
 				message.NewFormatted("PASSED: '%s' [time='%s', msg='%s', error='%s']",
