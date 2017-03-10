@@ -107,7 +107,8 @@ func (c *compileVS) findCl(envVars []string) (string, error) {
 
 	for _, vs := range c.envVars {
 		for _, v := range vs {
-			if strings.HasPrefix(v, "PATH=") || strings.HasPrefix(v, "Path=") {
+			if (strings.HasPrefix(v, "PATH=") || strings.HasPrefix(v, "Path=")) &&
+				strings.Contains(v, "Visual Studio") {
 				path = v[5:]
 				break
 			}
