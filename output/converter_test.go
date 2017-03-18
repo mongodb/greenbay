@@ -17,7 +17,7 @@ type mockCheck struct {
 
 func (c *mockCheck) Run() {
 	c.Base.WasSuccessful = true
-	c.Base.IsComplete = true
+	c.Base.MarkComplete()
 	c.hasRun = true
 }
 

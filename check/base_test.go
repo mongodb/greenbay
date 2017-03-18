@@ -30,7 +30,7 @@ func (s *BaseCheckSuite) SetupTest() {
 }
 
 func (s *BaseCheckSuite) TestInitialValuesOfBaseObject() {
-	s.False(s.base.IsComplete)
+	s.False(s.base.Status().Completed)
 	s.False(s.base.WasSuccessful)
 	s.Len(s.base.Errors, 0)
 }

@@ -74,7 +74,7 @@ func (s *GreenbayService) Close() {
 // Run wraps the Run method from amboy.rest.Service, and is responsible for
 // starting the service. This method blocks until the service terminates.
 func (s *GreenbayService) Run() {
-	s.service.Run()
+	s.service.App().Run()
 }
 
 ////////////////////////////////////////////////////////////////////////

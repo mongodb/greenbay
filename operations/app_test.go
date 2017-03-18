@@ -19,10 +19,6 @@ func TestAppSuite(t *testing.T) {
 	suite.Run(t, new(AppSuite))
 }
 
-func (s *AppSuite) SetupSuite() {
-
-}
-
 func (s *AppSuite) SetupTest() {
 	s.app = &GreenbayApp{}
 }
@@ -34,7 +30,7 @@ type mockCheck struct {
 
 func (c *mockCheck) Run() {
 	c.Base.WasSuccessful = true
-	c.Base.IsComplete = true
+	c.Base.MarkComplete()
 	c.hasRun = true
 }
 

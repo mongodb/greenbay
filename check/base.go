@@ -75,7 +75,7 @@ func (b *Base) Output() greenbay.CheckOutput {
 		Name:      b.ID(),
 		Check:     b.Type().Name,
 		Suites:    b.Suites(),
-		Completed: b.IsComplete,
+		Completed: b.Status().Completed,
 		Passed:    b.WasSuccessful,
 		Message:   b.Message,
 		Timing: greenbay.TimingInfo{

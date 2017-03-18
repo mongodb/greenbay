@@ -54,7 +54,7 @@ func (s *CheckSuite) TestInitialStateHasCorrectDefaults() {
 	output := s.check.Output()
 	s.False(output.Completed)
 	s.False(output.Passed)
-	s.False(s.check.Completed())
+	s.False(s.check.Status().Completed)
 	s.NoError(s.check.Error())
 	s.Equal("", output.Error)
 	s.Equal(s.name, output.Check)
@@ -64,20 +64,20 @@ func (s *CheckSuite) TestInitialStateHasCorrectDefaults() {
 func (s *CheckSuite) TestRunningTestsHasImpact() {
 	output := s.check.Output()
 	s.False(output.Completed)
-	s.False(s.check.Completed())
+	s.False(s.check.Status().Completed)
 	s.False(output.Passed)
 
 	s.check.Run()
 
 	output = s.check.Output()
 	s.True(output.Completed)
-	s.True(s.check.Completed())
+	s.True(s.check.Status().Completed)
 }
 
 func (s *CheckSuite) TestFailedChecksShouldReturnErrors() {
 	s.check.Run()
 	output := s.check.Output()
-	s.True(s.check.Completed())
+	s.True(s.check.Status().Completed)
 
 	err := s.check.Error()
 
