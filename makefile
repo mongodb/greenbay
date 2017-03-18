@@ -118,8 +118,8 @@ vendor-deps:$(vendorDeps)
 #   new-style vendor directories. When this codebase can drop support
 #   for go1.4, we can delete most of this.
 -include $(buildDir)/makefile.vendor
-nestedVendored := vendor/github.com/tychoish/grip
-nestedVendored += vendor/github.com/tychoish/gimlet
+nestedVendored := vendor/github.com/tychoish/gimlet
+nestedVendored += vendor/github.com/mongodb/grip
 nestedVendored += vendor/github.com/mongodb/amboy
 nestedVendored := $(foreach project,$(nestedVendored),$(project)/build/vendor)
 $(buildDir)/makefile.vendor:$(buildDir)/render-gopath makefile
@@ -130,20 +130,23 @@ vendor-sync:$(vendorDeps)
 	glide install -s
 vendor-clean:
 	rm -rf vendor/github.com/stretchr/testify/vendor/
-	rm -rf vendor/github.com/mongodb/amboy/vendor/github.com/tychoish/grip/
+	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/davecgh/
+	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/pmezard/
+	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/stretchr/
+	rm -rf vendor/github.com/mongodb/amboy/vendor/github.com/mongodb/grip/
 	rm -rf vendor/github.com/mongodb/amboy/vendor/golang.org/x/net/
 	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/stretchr/
 	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/davecgh/
 	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/pmezard/
-	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/tychoish/grip/
+	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/mongodb/grip/
 	find vendor/ -name "*.gif" -o -name "*.gz" -o -name "*.png" -o -name "*.ico" -o -name "*testdata*"| xargs rm -rf
 change-go-version:
 	rm -rf $(buildDir)/make-vendor $(buildDir)/render-gopath
 	@$(MAKE) $(makeArgs) vendor > /dev/null 2>&1
 vendor:$(buildDir)/vendor/src
-	@$(MAKE) $(makeArgs) -k -C vendor/github.com/tychoish/grip $@
-	@$(MAKE) $(makeArgs) -k -C vendor/github.com/tychoish/gimlet $@
+	@$(MAKE) $(makeArgs) -k -C vendor/github.com/mongodb/grip $@
 	@$(MAKE) $(makeArgs) -k -C vendor/github.com/mongodb/amboy $@
+	@$(MAKE) $(makeArgs) -k -C vendor/github.com/tychoish/gimlet $@
 $(buildDir)/vendor/src:$(buildDir)/make-vendor $(buildDir)/render-gopath
 	@./$(buildDir)/make-vendor
 #   targets to build the small programs used to support vendoring.
