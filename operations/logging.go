@@ -1,9 +1,9 @@
 package operations
 
 import (
+	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/send"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/send"
 )
 
 // SetupLogging is a helper to configure the global grip logging

@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 	"golang.org/x/sys/windows/registry"
 )
 

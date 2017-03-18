@@ -2,11 +2,11 @@ package output
 
 import (
 	"github.com/mongodb/amboy"
+	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/level"
+	"github.com/mongodb/grip/message"
+	"github.com/mongodb/grip/send"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/level"
-	"github.com/tychoish/grip/message"
-	"github.com/tychoish/grip/send"
 )
 
 // GripOutput provides a ResultsProducer implementation that writes

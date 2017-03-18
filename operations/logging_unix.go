@@ -2,7 +2,7 @@
 
 package operations
 
-import "github.com/tychoish/grip/send"
+import "github.com/mongodb/grip/send"
 
 func setupSyslogLogging() send.Sender {
 	return send.MakeLocalSyslogLogger()

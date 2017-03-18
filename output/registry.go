@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"sync"
 
-	"github.com/tychoish/grip"
+	"github.com/mongodb/grip"
 )
 
 // ResultsFactory defines the signature used by constructor functions

@@ -6,7 +6,7 @@ import (
 
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/amboy/registry"
-	"github.com/tychoish/grip"
+	"github.com/mongodb/grip"
 )
 
 // MockCheck implements a Mock check which is useful for for testing,

@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 )
 
 func compilerInterfaceFactoryTable() map[string]compilerFactory {

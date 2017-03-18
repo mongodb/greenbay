@@ -3,8 +3,8 @@
 package operations
 
 import (
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/send"
+	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/send"
 )
 
 func setupSystemdLogging() send.Sender {

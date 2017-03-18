@@ -12,8 +12,8 @@ import (
 	"github.com/mongodb/amboy/rest"
 	"github.com/mongodb/greenbay/check"
 	"github.com/mongodb/greenbay/operations"
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 	"github.com/urfave/cli"
 	"golang.org/x/net/context"
 )

@@ -4,9 +4,9 @@ import (
 	"flag"
 	"testing"
 
+	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/level"
 	"github.com/stretchr/testify/suite"
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/level"
 	"github.com/urfave/cli"
 )
 

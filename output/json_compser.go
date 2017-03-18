@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mongodb/greenbay"
-	"github.com/tychoish/grip/message"
+	"github.com/mongodb/grip/message"
 )
 
 type jsonOutput struct {

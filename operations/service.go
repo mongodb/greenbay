@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/mongodb/amboy/rest"
+	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
 	"github.com/tychoish/gimlet"
-	"github.com/tychoish/grip"
-	"github.com/tychoish/grip/message"
 	"golang.org/x/net/context"
 )
 

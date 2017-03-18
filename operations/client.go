@@ -9,9 +9,9 @@ import (
 	"github.com/mongodb/greenbay"
 	"github.com/mongodb/greenbay/config"
 	"github.com/mongodb/greenbay/output"
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-	"github.com/tychoish/grip"
 	"golang.org/x/net/context"
 )
 

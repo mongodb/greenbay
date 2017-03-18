@@ -12,10 +12,10 @@ import (
 	"github.com/mongodb/amboy/job"
 	"github.com/mongodb/amboy/queue"
 	"github.com/mongodb/greenbay/check"
+	"github.com/mongodb/grip"
 	"github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/tychoish/grip"
 	"golang.org/x/net/context"
 )
 

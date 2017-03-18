@@ -6,8 +6,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/mongodb/amboy"
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 )
 
 // Helper functions that convert yaml-to-json so that the constructor

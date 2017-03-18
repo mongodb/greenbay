@@ -7,9 +7,9 @@ import (
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/amboy/registry"
 	"github.com/mongodb/greenbay"
+	"github.com/mongodb/grip"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/tychoish/grip"
 )
 
 type CheckSuite struct {

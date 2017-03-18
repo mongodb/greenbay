@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/mongodb/amboy"
+	"github.com/mongodb/grip"
 	"github.com/stretchr/testify/assert"
-	"github.com/tychoish/grip"
 )
 
 func TestGetFormatFromFileName(t *testing.T) {

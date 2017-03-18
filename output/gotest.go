@@ -9,8 +9,8 @@ import (
 
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/greenbay"
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 )
 
 // GoTest defines a ResultsProducer implementation that generates

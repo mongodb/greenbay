@@ -21,8 +21,8 @@ import (
 	"github.com/mongodb/amboy/queue"
 	"github.com/mongodb/greenbay/config"
 	"github.com/mongodb/greenbay/output"
+	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"github.com/tychoish/grip"
 	"golang.org/x/net/context"
 )
 
