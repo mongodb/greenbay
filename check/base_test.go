@@ -97,8 +97,8 @@ func (s *BaseCheckSuite) TestStatMutability() {
 }
 
 func (s *BaseCheckSuite) TestSetMessageConvertsTypesToString() {
-	var mOne interface{}
-	mOne = "foo"
+	var mOne interface{} = "foo"
+
 	s.base.setMessage(mOne)
 	s.Equal("foo", s.base.Message)
 
