@@ -20,12 +20,13 @@ import (
 )
 
 type ProducerSuite struct {
-	tmpDir  string
-	results ResultsProducer
-	factory ResultsFactory
-	require *require.Assertions
-	cancel  context.CancelFunc
-	queue   amboy.Queue
+	tmpDir   string
+	results  ResultsProducer
+	factory  ResultsFactory
+	require  *require.Assertions
+	cancel   context.CancelFunc
+	queue    amboy.Queue
+	isGoTest bool
 	suite.Suite
 }
 
@@ -34,6 +35,7 @@ type ProducerSuite struct {
 
 func TestGoTestProducerSuite(t *testing.T) {
 	s := new(ProducerSuite)
+	s.isGoTest = true
 	s.factory = func() ResultsProducer {
 		return &GoTest{
 			buf: bytes.NewBuffer([]byte{}),
@@ -105,6 +107,7 @@ func (s *ProducerSuite) TestPopulateOperationDoNotErrorWithBasicTasks() {
 }
 
 func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
+
 	// everything is a pointer inside the queue so this should work:
 	for t := range s.queue.Results() {
 		task := t.(*mockCheck)
@@ -112,10 +115,6 @@ func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
 	}
 
 	s.NoError(s.results.Populate(s.queue.Results()))
-
-	grip.Alert("printing test results")
-	s.Error(s.results.Print())
-	grip.Alert("completed printing results")
 
 	s.Error(s.results.ToFile(filepath.Join(s.tmpDir, "one")))
 
@@ -128,6 +127,10 @@ func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
 func (s *ProducerSuite) TestPrintMethodReturnsNoErrorIfAllOperationsAreSuccessful() {
 	s.NoError(s.results.Populate(s.queue.Results()))
 
+	if s.isGoTest {
+		s.Suite.T().Skip("skipping printing results for go test because it is confusing")
+	}
+
 	grip.Alert("printing test results")
 	s.NoError(s.results.Print())
 	grip.Alert("completed printing results")
@@ -137,8 +140,8 @@ func (s *ProducerSuite) TestToFileMethodReturnsNoErrorIfAllOperationsAreSuccessf
 	s.NoError(s.results.Populate(s.queue.Results()))
 
 	err := s.results.ToFile(filepath.Join(s.tmpDir, "two"))
-	s.NoError(err)
 	grip.Error(err)
+	s.NoError(err)
 }
 
 func (s *ProducerSuite) TestWithQueueAndInvalidJobs() {
