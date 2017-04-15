@@ -29,7 +29,7 @@ func TestFileExistsCheckImplementation(t *testing.T) {
 
 	// make sure it can find files that do exist
 	check = checkFactory()
-	check.FileName = "../makefile"
+	check.FileName = "makefile"
 	check.Run()
 	output = check.Output()
 
@@ -71,7 +71,7 @@ func TestFileDoesNotExistCheckImplementation(t *testing.T) {
 
 	// make sure files that exist fail
 	check = checkFactory()
-	check.FileName = "../makefile"
+	check.FileName = "makefile"
 	check.Run()
 	output = check.Output()
 

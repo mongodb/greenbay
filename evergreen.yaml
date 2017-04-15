@@ -134,26 +134,6 @@ tasks:
         vars:
           target: "coverage-html"
           make_args: "-k"
-      - command: s3.put
-        params:
-          aws_key: ${aws_key}
-          aws_secret: ${aws_secret}
-          local_files_include_filter: ["gopath/src/github.com/mongodb/greenbay/bin/coverage.*.html"]
-          remote_file: evergreen/${task_id}/
-          bucket: mciuploads
-          content_type: text/html
-          permissions: public-read
-          display_name: "(html) coverage:"
-      - command: s3.put
-        params:
-          aws_key: ${aws_key}
-          aws_secret: ${aws_secret}
-          local_files_include_filter: ["gopath/src/github.com/mongodb/greenbay/bin/coverage.*.out"]
-          remote_file: evergreen/${task_id}/
-          bucket: mciuploads
-          content_type: text/plain
-          permissions: public-read
-          display_name: "(txt) coverage:"
 
   # define tasks for all test suites (modules)
   - <<: *run-go-test-suite
@@ -223,10 +203,33 @@ post:
       files:
         - "gopath/src/github.com/mongodb/greenbay/build/test.*.out"
         - "gopath/src/github.com/mongodb/greenbay/build/race.*.out"
+        - "gopath/src/github.com/mongodb/greenbay/build/output.*"
   - command: shell.exec
     params:
       script: |
         rm -rf greenbay
+  - command: s3.put
+    type: system
+    params:
+      aws_key: ${aws_key}
+      aws_secret: ${aws_secret}
+      local_files_include_filter: ["gopath/src/github.com/mongodb/greenbay/build/output.*.coverage.html"]
+      remote_file: greenbay/${task_id}/
+      bucket: mciuploads
+      content_type: text/html
+      permissions: public-read
+      display_name: "(html) coverage:"
+  - command: s3.put
+    type: system
+    params:
+      aws_key: ${aws_key}
+      aws_secret: ${aws_secret}
+      local_files_include_filter: ["gopath/src/github.com/mongodb/greenbay/build/output.*.coverage"]
+      remote_file: greenbay/${task_id}/
+      bucket: mciuploads
+      content_type: text/plain
+      permissions: public-read
+      display_name: "(txt) coverage:"
 
 
 #######################################

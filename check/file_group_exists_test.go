@@ -44,7 +44,7 @@ func (s *FileGroupSuite) TestWithInvalidRequirements() {
 }
 
 func (s *FileGroupSuite) TestOneExtantFileWithAllRequirement() {
-	s.group.FileNames = []string{"../makefile"}
+	s.group.FileNames = []string{"makefile"}
 	s.True(s.group.Requirements.All)
 	s.NoError(s.group.Requirements.Validate())
 
@@ -56,7 +56,7 @@ func (s *FileGroupSuite) TestOneExtantFileWithAllRequirement() {
 }
 
 func (s *FileGroupSuite) TestWithFilesThatExistAndDoNotExistWIthAllRequirement() {
-	s.group.FileNames = []string{"../makefile", "../makefile.DOES-NOT-EXIST"}
+	s.group.FileNames = []string{"makefile", "makefile.DOES-NOT-EXIST"}
 	s.True(s.group.Requirements.All)
 	s.NoError(s.group.Requirements.Validate())
 
