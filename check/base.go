@@ -95,6 +95,7 @@ func (b *Base) setState(result bool) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
+	b.Timing.End = time.Now()
 	b.WasSuccessful = result
 }
 

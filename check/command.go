@@ -66,7 +66,6 @@ func (c *shellOperation) Run() {
 		logMsg = append(logMsg, fmt.Sprintf("env='%s'", strings.Join(env, " ")))
 	}
 
-	c.setState(true) // default to pass
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		logMsg = append(logMsg, fmt.Sprintf("err='%+v'", err))
@@ -75,11 +74,15 @@ func (c *shellOperation) Run() {
 			c.setState(false)
 			c.AddError(errors.Wrapf(err, "command failed",
 				c.ID(), c.Command))
+		} else {
+			c.setState(true)
 		}
 	} else if c.shouldFail {
 		c.setState(false)
 		c.AddError(errors.Errorf("command '%s' succeeded but test expects it to fail",
 			c.Command))
+	} else {
+		c.setState(true)
 	}
 
 	grip.Debug(strings.Join(logMsg, ", "))

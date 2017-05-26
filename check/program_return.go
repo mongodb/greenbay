@@ -42,8 +42,6 @@ func (c *programReturnCheck) Run() {
 	c.startTask()
 	defer c.MarkComplete()
 
-	c.setState(true)
-
 	if err := c.compiler.Validate(); err != nil {
 		c.setState(false)
 		c.AddError(errors.Wrap(err, "failed to validate compiler"))
@@ -59,4 +57,5 @@ func (c *programReturnCheck) Run() {
 		})
 		return
 	}
+	c.setState(true)
 }

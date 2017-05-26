@@ -35,8 +35,6 @@ func (c *limitCheck) Run() {
 	c.startTask()
 	defer c.MarkComplete()
 
-	c.setState(true) // default to true unless proven otherwise.
-
 	result, err := c.limitTest(c.Value)
 	if err != nil {
 		c.setState(false)
@@ -49,6 +47,8 @@ func (c *limitCheck) Run() {
 		c.AddError(errors.Errorf("limit in check %s is incorrect", c.ID()))
 		return
 	}
+
+	c.setState(true)
 }
 
 func undefinedLimitCheckFactory(name string) limitValueCheck {

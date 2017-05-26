@@ -41,8 +41,6 @@ func (c *programOutputCheck) Run() {
 	c.startTask()
 	defer c.MarkComplete()
 
-	c.setState(true)
-
 	if err := c.compiler.Validate(); err != nil {
 		c.setState(false)
 		c.AddError(err)
@@ -76,4 +74,5 @@ func (c *programOutputCheck) Run() {
 		})
 		return
 	}
+	c.setState(true)
 }

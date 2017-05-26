@@ -92,8 +92,6 @@ func (c *compileCheck) Run() {
 	c.startTask()
 	defer c.MarkComplete()
 
-	c.setState(true)
-
 	if err := c.compiler.Validate(); err != nil {
 		c.setState(false)
 		c.AddError(err)
@@ -121,11 +119,15 @@ func (c *compileCheck) Run() {
 			c.setState(false)
 			c.AddError(err)
 			c.setMessage(output)
+		} else {
+			c.setState(true)
 		}
 	} else {
 		if err := c.compiler.Compile(c.Source, cflags...); err != nil {
 			c.setState(false)
 			c.AddError(err)
+		} else {
+			c.setState(true)
 		}
 	}
 }
