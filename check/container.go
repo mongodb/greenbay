@@ -112,6 +112,7 @@ func (c *containerCheck) Run() {
 		if err := c.container.hostIsAccessible(host); err != nil {
 			c.AddError(err)
 			c.setState(false)
+
 			failed = true
 			continue
 		}
@@ -128,7 +129,7 @@ func (c *containerCheck) Run() {
 	if activeHosts != len(c.Hostnames) || len(messages) != 0 {
 		c.setMessage(messages)
 	}
-	if failed == false {
+	if !failed {
 		c.setState(true)
 	}
 }
