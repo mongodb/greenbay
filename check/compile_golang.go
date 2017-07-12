@@ -85,6 +85,7 @@ func (c compileGolang) Compile(testBody string, _ ...string) error {
 	if err != nil {
 		return errors.Wrap(err, "problem writing test to temporary file")
 	}
+	defer os.Remove(source)
 
 	cmd := exec.Command(c.bin, "build", source)
 	if c.path != "" {
@@ -106,9 +107,10 @@ func (c compileGolang) CompileAndRun(testBody string, _ ...string) (string, erro
 	if err != nil {
 		return "", errors.Wrap(err, "problem writing test to temporary file")
 	}
+	defer os.Remove(source)
 
 	cmd := exec.Command(c.bin, "run", source)
-	grip.Infof("running build command: %s", cmd.Args)
+	grip.Infof("running script: %s", cmd.Args)
 
 	out, err := cmd.CombinedOutput()
 	output := string(out)

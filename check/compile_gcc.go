@@ -75,6 +75,7 @@ func (c compileGCC) Compile(testBody string, cFlags ...string) error {
 	if err != nil {
 		return errors.Wrap(err, "problem writing test to file")
 	}
+	defer os.Remove(outputName)
 
 	defer grip.CatchWarning(os.Remove(outputName))
 	argv := []string{"-Werror", "-o", outputName, "-c", sourceName}
@@ -95,8 +96,7 @@ func (c compileGCC) CompileAndRun(testBody string, cFlags ...string) (string, er
 	if err != nil {
 		return "", errors.Wrap(err, "problem writing test to file")
 	}
-
-	defer grip.CatchWarning(os.Remove(outputName))
+	defer os.Remove(outputName)
 
 	argv := []string{"-Werror", "-o", outputName, sourceName}
 	argv = append(argv, cFlags...)

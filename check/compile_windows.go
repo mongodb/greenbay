@@ -194,8 +194,8 @@ func (c *compileVS) CompileAndRun(testBody string, cFlags ...string) (string, er
 	}
 
 	defer os.Remove(sourceName)
-
 	defer os.Remove(fmt.Sprintf("%s.obj", outputName))
+
 	argv := []string{
 		fmt.Sprintf("/Fo%s", outputName), // Set .obj output name
 		fmt.Sprintf("/Fe%s", outputName), // Set .exe output name
