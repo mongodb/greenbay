@@ -40,6 +40,10 @@ func init() {
 	AddFactory("json", func() ResultsProducer {
 		return &JSONResults{}
 	})
+
+	AddFactory("report", func() ResultsProducer {
+		return &Report{}
+	})
 }
 
 func (r *resultsFactoryRegistry) add(name string, factory ResultsFactory) {

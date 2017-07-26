@@ -2,7 +2,7 @@ hash: 75c7ee1fdb954853d3ab8f1b62b85ad7c1a8719da2d2396238f0eba863fb86e0
 updated: 2016-06-16T14:14:58.047959949-04:00
 imports:
 - name: github.com/pkg/errors
-  version: 01fa4104b9c248c8945d14d9f128454d5b28d595
+  version: ff09b135c25aae272398c51a07235b90a75aa4f0
 - name: golang.org/x/net
   version: 1358eff22f0dd0c54fc521042cc607f6ff4b531a
 - name: gopkg.in/yaml.v2
