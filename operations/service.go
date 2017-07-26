@@ -5,8 +5,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/mongodb/amboy"
+	"github.com/mongodb/amboy/queue"
 	"github.com/mongodb/amboy/rest"
+	"github.com/mongodb/greenbay/config"
+	"github.com/mongodb/greenbay/output"
 	"github.com/mongodb/grip"
 	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
@@ -19,17 +24,28 @@ import (
 type GreenbayService struct {
 	DisableStats bool
 	service      *rest.Service
+	conf         *config.GreenbayTestConfig
+	output       *output.Options
 }
 
 // NewService constructs a GreenbayService, but does not start the
 // service. You will need to run Open to start the underlying workers and
 // Run to start the HTTP service. You can set the host to the empty
 // string, to bind the service to all interfaces.
-func NewService(host string, port int) (*GreenbayService, error) {
+func NewService(confPath string, host string, port int) (*GreenbayService, error) {
 	s := &GreenbayService{
 		// this operation loads all job instance names from
 		// greenbay and and constructs the amboy.rest.Service object.
 		service: rest.NewService(),
+	}
+
+	if confPath != "" {
+		conf, err := config.ReadConfig(confPath)
+		if err != nil {
+			return nil, errors.Wrap(err, "problem parsing config file")
+		}
+		s.conf = conf
+		s.output = &output.Options{}
 	}
 
 	app := s.service.App()
@@ -58,6 +74,12 @@ func (s *GreenbayService) Open(ctx context.Context, info rest.ServiceInfo) error
 		app.AddRoute("/stats/process_info").Version(1).Get().Handler(s.processInfoHandler)
 	}
 
+	if s.conf != nil {
+		app.AddRoute("/check/reload").Version(1).Get().Handler(s.reloadConfig)
+		app.AddRoute("/check/suite/{suite_id}").Version(1).Get().Handler(s.runSuiteHandler)
+		app.AddRoute("/check/test/{test_id}").Version(1).Get().Handler(s.runTestHandler)
+	}
+
 	if err := s.service.OpenInfo(ctx, info); err != nil {
 		return errors.Wrap(err, "problem opening queue")
 	}
@@ -75,6 +97,76 @@ func (s *GreenbayService) Close() {
 // starting the service. This method blocks until the service terminates.
 func (s *GreenbayService) Run() {
 	grip.CatchAlert(s.service.App().Run())
+}
+
+////////////////////////////////////////////////////////////////////////
+//
+// Handlers for adhoc job reporting
+//
+////////////////////////////////////////////////////////////////////////
+
+func (s *GreenbayService) reloadConfig(w http.ResponseWriter, r *http.Request) {
+	if err := s.conf.Reload(); err != nil {
+		gimlet.WriteErrorJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	gimlet.WriteJSON(w, map[string]string{"status": "config reloaded"})
+}
+
+func (s *GreenbayService) runSuiteHandler(w http.ResponseWriter, r *http.Request) {
+	output, err := s.runAdhocTests(s.conf.TestsForSuites(gimlet.GetVars(r)["suite_id"]))
+
+	if err != nil {
+		gimlet.WriteErrorJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	gimlet.WriteJSON(w, output)
+}
+
+func (s *GreenbayService) runTestHandler(w http.ResponseWriter, r *http.Request) {
+	output, err := s.runAdhocTests(s.conf.TestsByName(gimlet.GetVars(r)["test_id"]))
+
+	if err != nil {
+		gimlet.WriteErrorJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	gimlet.WriteJSON(w, output)
+}
+
+func (s *GreenbayService) runAdhocTests(jobs <-chan config.JobWithError) (interface{}, error) {
+	catcher := grip.NewCatcher()
+	q := queue.NewLocalUnordered(2)
+	defer q.Runner().Close()
+
+	for unit := range jobs {
+		if unit.Err != nil {
+			catcher.Add(unit.Err)
+			continue
+		}
+
+		catcher.Add(q.Put(unit.Job))
+	}
+
+	if catcher.HasErrors() {
+		return nil, catcher.Resolve()
+	}
+
+	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
+	defer cancel()
+	amboy.WaitCtxInterval(ctx, q, 10*time.Millisecond)
+	if ctx.Err() != nil {
+		return nil, errors.New("check operation timedout")
+	}
+
+	output, err := s.output.Report(q.Results())
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
 
 ////////////////////////////////////////////////////////////////////////

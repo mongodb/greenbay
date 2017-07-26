@@ -17,6 +17,7 @@ type GreenbayTestConfig struct {
 	RawTests []rawTest            `bson:"tests" json:"tests" yaml:"tests"`
 	tests    map[string]amboy.Job // maping of test names to test objects
 	suites   map[string][]string  // mapping of suite names to test names
+	filename string
 	mutex    sync.RWMutex
 }
 
@@ -48,6 +49,7 @@ func ReadConfig(fn string) (*GreenbayTestConfig, error) {
 	}
 
 	c := newTestConfig()
+	c.filename = fn
 	// we don't take the lock here because this function doesn't
 	// spawn threads, and nothing else can see the object we're
 	// building. If either of those things change we should take
@@ -57,6 +59,8 @@ func ReadConfig(fn string) (*GreenbayTestConfig, error) {
 		return nil, errors.Wrapf(err, "problem parsing config '%s'", fn)
 	}
 
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	if err = c.parseTests(); err != nil {
 		return nil, errors.Wrapf(err, "problem parsing tests from file '%s'", fn)
 	}
@@ -64,6 +68,27 @@ func ReadConfig(fn string) (*GreenbayTestConfig, error) {
 	grip.Infoln("loading config file:", fn)
 
 	return c, nil
+}
+
+func (c *GreenbayTestConfig) Reload() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	data, err := getRawConfig(c.filename)
+	if err != nil {
+		return errors.Wrapf(err, "problem reading config data for '%s'", c.filename)
+	}
+
+	if err = json.Unmarshal(data, c); err != nil {
+		return errors.Wrapf(err, "problem parsing config '%s'", c.filename)
+	}
+
+	if err = c.parseTests(); err != nil {
+		return errors.Wrapf(err, "problem parsing tests from file '%s'", c.filename)
+	}
+
+	grip.Infoln("reloaded config file:", c.filename)
+	return nil
 }
 
 // JobWithError is a type used by the test generators and contains an

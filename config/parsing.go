@@ -63,9 +63,6 @@ func getRawConfig(fn string) ([]byte, error) {
 ////////////////////////////////////////////////////////////////////////
 
 func (c *GreenbayTestConfig) parseTests() error {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
 	catcher := grip.NewCatcher()
 	for _, msg := range c.RawTests {
 		c.addSuites(msg.Name, msg.Suites)

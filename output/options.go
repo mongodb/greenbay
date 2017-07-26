@@ -2,6 +2,7 @@ package output
 
 import (
 	"github.com/mongodb/amboy"
+	"github.com/mongodb/greenbay"
 	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
 )
@@ -90,4 +91,21 @@ func (o *Options) CollectResults(jobs <-chan amboy.Job) error {
 	}
 
 	return catcher.Resolve()
+}
+
+// Report produces the results of a test run in a parseable map
+// structure for programmatic use.
+func (o *Options) Report(jobs <-chan amboy.Job) (map[string]*greenbay.CheckOutput, error) {
+	rp := &Report{}
+	output := make(map[string]*greenbay.CheckOutput)
+
+	if err := rp.Populate(jobs); err != nil {
+		return output, errors.Wrap(err, "problem generating results content")
+	}
+
+	for k, v := range rp.results {
+		output[k] = v
+	}
+
+	return output, nil
 }

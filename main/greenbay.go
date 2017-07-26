@@ -78,11 +78,22 @@ func loggingSetup(name, level string) {
 	grip.SetThreshold(level)
 }
 
-func addArgs(a ...cli.Flag) []cli.Flag {
+func addConfArg(a ...cli.Flag) []cli.Flag {
 	cwd, _ := os.Getwd()
 	configPath := filepath.Join(cwd, "greenbay.yaml")
 
 	return append(a,
+		cli.StringFlag{
+			Name: "conf",
+			Usage: fmt.Sprintln("path to config file. '.json', '.yaml', and '.yml' extensions ",
+				"supported.", "Default path:", configPath),
+			Value: configPath,
+		})
+
+}
+
+func addArgs(a ...cli.Flag) []cli.Flag {
+	args := append(a,
 		cli.StringSliceFlag{
 			Name:  "test",
 			Usage: "specify a check, by name. may specify multiple times",
@@ -90,12 +101,6 @@ func addArgs(a ...cli.Flag) []cli.Flag {
 		cli.StringSliceFlag{
 			Name:  "suite",
 			Usage: "specify a suite or suites, by name. if not specified, runs the 'all' suite",
-		},
-		cli.StringFlag{
-			Name: "conf",
-			Usage: fmt.Sprintln("path to config file. '.json', '.yaml', and '.yml' extensions ",
-				"supported.", "Default path:", configPath),
-			Value: configPath,
 		},
 		cli.StringFlag{
 			Name:  "output",
@@ -112,8 +117,9 @@ func addArgs(a ...cli.Flag) []cli.Flag {
 				"but also supports evergreen's results format.",
 				"Use 'gotest' (default), 'json', 'result', or 'log'."),
 			Value: "gotest",
-		},
-	)
+		})
+
+	return addConfArg(args...)
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -193,7 +199,7 @@ func service() cli.Command {
 	return cli.Command{
 		Name:  "service",
 		Usage: "run a amboy service with greenbay checks loaded.",
-		Flags: []cli.Flag{
+		Flags: addConfArg(
 			cli.IntFlag{
 				Name:  "port",
 				Usage: "http port to run service on",
@@ -227,15 +233,14 @@ func service() cli.Command {
 			cli.BoolFlag{
 				Name:  "disableStats",
 				Usage: "disable the sysinfo and process tree stats endpoints",
-			},
-		},
+			}),
 		Action: func(c *cli.Context) error {
 			grip.CatchEmergencyFatal(operations.SetupLogging(c.String("logOutput"), c.String("file")))
 
 			ctx := context.Background()
 			info := rest.ServiceInfo{QueueSize: c.Int("cache"), NumWorkers: c.Int("jobs")}
 
-			s, err := operations.NewService(c.String("host"), c.Int("port"))
+			s, err := operations.NewService(c.String("conf"), c.String("host"), c.Int("port"))
 			grip.CatchEmergencyFatal(err)
 
 			s.DisableStats = c.Bool("disableStats")

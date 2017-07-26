@@ -46,6 +46,9 @@ func (b *Builder) Conf() (*GreenbayTestConfig, error) {
 	b.mutex.Unlock()
 
 	out.reset()
+
+	out.mutex.Lock()
+	defer out.mutex.Unlock()
 	if err := out.parseTests(); err != nil {
 		return &GreenbayTestConfig{}, errors.Wrap(err, "problem refreshing config builder")
 	}
