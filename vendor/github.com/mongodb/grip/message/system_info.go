@@ -5,29 +5,29 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/mongodb/grip/level"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
-	"github.com/mongodb/grip/level"
 )
 
 // SystemInfo is a type that implements message.Composer but also
 // collects system-wide resource utilization statistics about memory,
 // CPU, and network use, along with an optional message.
 type SystemInfo struct {
-	Message   string                `json:"message,omitempty" bson:"message,omitempty"`
-	CPU       cpu.TimesStat         `json:"cpu,omitempty" bson:"cpu,omitempty"`
-	NumCPU    int                   `json:"num_cpus,omitempty" bson:"num_cpus,omitempty"`
-	VMStat    mem.VirtualMemoryStat `json:"vmstat,omitempty" bson:"vmstat,omitempty"`
-	NetStat   net.IOCountersStat    `json:"netstat,omitempty" bson:"netstat,omitempty"`
-	Paritions []disk.PartitionStat  `json:"partitions,omitempty" bson:"partitions,omitempty"`
-	Usage     []disk.UsageStat      `json:"usage,omitempty" bson:"usage,omitempty"`
-	IOStat    []disk.IOCountersStat `json:"iostat,omitempty" bson:"iostat,omitempty"`
-	Errors    []string              `json:"errors,omitempty" bson:"errors,omitempty"`
-	Base      `json:"metadata,omitempty" bson:"metadata,omitempty"`
-	loggable  bool
-	rendered  string
+	Message    string                `json:"message,omitempty" bson:"message,omitempty"`
+	CPU        cpu.TimesStat         `json:"cpu,omitempty" bson:"cpu,omitempty"`
+	NumCPU     int                   `json:"num_cpus,omitempty" bson:"num_cpus,omitempty"`
+	VMStat     mem.VirtualMemoryStat `json:"vmstat,omitempty" bson:"vmstat,omitempty"`
+	NetStat    net.IOCountersStat    `json:"netstat,omitempty" bson:"netstat,omitempty"`
+	Partitions []disk.PartitionStat  `json:"partitions,omitempty" bson:"partitions,omitempty"`
+	Usage      []disk.UsageStat      `json:"usage,omitempty" bson:"usage,omitempty"`
+	IOStat     []disk.IOCountersStat `json:"iostat,omitempty" bson:"iostat,omitempty"`
+	Errors     []string              `json:"errors,omitempty" bson:"errors,omitempty"`
+	Base       `json:"metadata,omitempty" bson:"metadata,omitempty"`
+	loggable   bool
+	rendered   string
 }
 
 // CollectSystemInfo returns a populated SystemInfo object,
@@ -45,12 +45,13 @@ func MakeSystemInfo(message string) Composer {
 // NewSystemInfo returns a fully configured and populated SystemInfo
 // object.
 func NewSystemInfo(priority level.Priority, message string) Composer {
+	var err error
 	s := &SystemInfo{
 		Message: message,
 		NumCPU:  runtime.NumCPU(),
 	}
 
-	if err := s.SetPriority(priority); err != nil {
+	if err = s.SetPriority(priority); err != nil {
 		s.Errors = append(s.Errors, err.Error())
 		return s
 	}
@@ -58,7 +59,7 @@ func NewSystemInfo(priority level.Priority, message string) Composer {
 	s.loggable = true
 
 	times, err := cpu.Times(false)
-	s.saveError(err)
+	s.saveError("cpu_times", err)
 	if err == nil && len(times) > 0 {
 		// since we're not storing per-core information,
 		// there's only one thing we care about in this struct
@@ -66,23 +67,23 @@ func NewSystemInfo(priority level.Priority, message string) Composer {
 	}
 
 	vmstat, err := mem.VirtualMemory()
-	s.saveError(err)
-	if err != nil && vmstat != nil {
+	s.saveError("vmstat", err)
+	if err == nil && vmstat != nil {
 		s.VMStat = *vmstat
 	}
 
 	netstat, err := net.IOCounters(false)
-	s.saveError(err)
+	s.saveError("netstat", err)
 	if err == nil && len(netstat) > 0 {
 		s.NetStat = netstat[0]
 	}
 
 	partitions, err := disk.Partitions(true)
-	s.saveError(err)
-	if err != nil {
+	s.saveError("disk_part", err)
+	if err == nil {
 		for _, p := range partitions {
 			u, err := disk.Usage(p.Mountpoint)
-			s.saveError(err)
+			s.saveError("partition", err)
 			if err != nil {
 				continue
 			}
@@ -90,11 +91,11 @@ func NewSystemInfo(priority level.Priority, message string) Composer {
 			s.Usage = append(s.Usage, *u)
 		}
 
-		s.Paritions = partitions
+		s.Partitions = partitions
 	}
 
 	iostatMap, err := disk.IOCounters()
-	s.saveError(err)
+	s.saveError("iostat", err)
 	for _, stat := range iostatMap {
 		s.IOStat = append(s.IOStat, stat)
 	}
@@ -120,9 +121,9 @@ func (s *SystemInfo) String() string {
 	return s.rendered
 }
 
-func (s *SystemInfo) saveError(err error) {
+func (s *SystemInfo) saveError(stat string, err error) {
 	if shouldSaveError(err) {
-		s.Errors = append(s.Errors, err.Error())
+		s.Errors = append(s.Errors, fmt.Sprintf("%s: %v", stat, err))
 	}
 }
 
