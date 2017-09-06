@@ -11,7 +11,6 @@ func TestBuilderObject(t *testing.T) {
 	builder := NewBuilder()
 
 	assert.Equal(builder.Len(), 0)
-	return
 
 	// TODO register type of check
 	// assert.NoError(builder.AddCheck(j))

@@ -17,6 +17,9 @@ type Report struct {
 	hasErrors bool
 }
 
+// Populate generates output, based on the content (via the Results()
+// method) of an amboy.Queue instance. All jobs processed by that
+// queue must also implement the greenbay.Checker interface.
 func (r *Report) Populate(jobs <-chan amboy.Job) error {
 	r.results = make(map[string]*greenbay.CheckOutput)
 	catcher := grip.NewCatcher()
@@ -36,6 +39,7 @@ func (r *Report) Populate(jobs <-chan amboy.Job) error {
 	return catcher.Resolve()
 }
 
+// ToFile writes a JSON report to the specified file.
 func (r *Report) ToFile(fn string) error {
 	data, err := r.getJSON()
 	if err != nil {
@@ -53,6 +57,8 @@ func (r *Report) ToFile(fn string) error {
 	return nil
 }
 
+// Print generates the JSON report and writes the output via a
+// fmt.Println operation.
 func (r *Report) Print() error {
 	data, err := r.getJSON()
 	if err != nil {

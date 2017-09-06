@@ -70,6 +70,9 @@ func ReadConfig(fn string) (*GreenbayTestConfig, error) {
 	return c, nil
 }
 
+// Reload reparses the local test file, and makes it possible to use
+// greenbay as a service and change the test definition without
+// restarting the service.
 func (c *GreenbayTestConfig) Reload() error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()

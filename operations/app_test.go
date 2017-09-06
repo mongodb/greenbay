@@ -23,7 +23,7 @@ func (s *AppSuite) SetupTest() {
 	s.app = &GreenbayApp{}
 }
 
-type mockCheck struct {
+type mockCheck struct { // nolint: megacheck
 	hasRun bool
 	check.Base
 }
