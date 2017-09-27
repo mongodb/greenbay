@@ -90,7 +90,6 @@ functions:
 
          # Run make, called with proper environment variables set,
          # running the target.
-         ${build_env} make vendor ${target}
          ${build_env|} ${xc_env|} make ${target}
 
 #######################################
@@ -261,16 +260,6 @@ buildvariants:
     run_on:
       - rhel70-small
       - rhel70
-    tasks:
-      - ".dist"
-      - ".test"
-
-  - name: rhel62-gccgo
-    display_name: RHEL 6.2 (gccgo)
-    expansions:
-      build_env: "PATH=/opt/mongodbtoolchain/v2/bin:$PATH DISABLE_COVERAGE=yes"
-    run_on:
-      - rhel62-small
     tasks:
       - ".dist"
       - ".test"
