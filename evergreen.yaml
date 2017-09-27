@@ -33,39 +33,6 @@ variables:
     - debian81-test
     - debian71-test
 
-  # Task lists for build variants. Some (known) duplication between
-  # these lists and the task definitions below.
-  - &test-tasks
-      # this should be build+all test suite names. to add a new test you
-      # must additionally add the test suite name to the dev-tasks list
-      # bellow and the task list, using the run-go-suite template
-      - name: build
-      - name: test-main
-      - name: test-operations
-      - name: test-config
-      - name: test-check
-      - name: test-output
-      - name: push
-  - &dev-tasks
-      # dev tasks contains all the test suites plus coverage and
-      # linting, and the race detector this is a special builder.
-      - name: build
-      - name: lint
-      - name: test-main
-      - name: test-operations
-      - name: test-config
-      - name: test-check
-      - name: test-output
-      - name: coverage
-      - name: push
-  - &race-detector-tasks
-      - name: build-race
-      - name: race-main
-      - name: race-operations
-      - name: race-config
-      - name: race-check
-      - name: race-output
-
 
 #######################################
 #              Functions              #
@@ -91,6 +58,7 @@ functions:
          # Run make, called with proper environment variables set,
          # running the target.
          ${build_env|} ${xc_env|} make ${target}
+
 
 #######################################
 #                Tasks                #
@@ -194,7 +162,6 @@ tasks:
           - {'source': { 'path': 'greenbay/${build_id}-${build_variant}/greenbay-dist-${revision}.tar.gz', 'bucket': 'mciuploads' },
              'destination': { 'path': 'build/greenbay/greenbay-dist-${build_variant}-${revision}.tar.gz', 'bucket': 'boxes.10gen.com' }
             }
-
 
 post:
   - command: gotest.parse_files
