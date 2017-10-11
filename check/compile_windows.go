@@ -36,7 +36,7 @@ func compilerInterfaceFactoryTable() map[string]compilerFactory {
 type compileVS struct {
 	envVars  map[string][]string
 	versions []string
-	catcher  *grip.MultiCatcher
+	catcher  grip.Catcher
 }
 
 func newCompileVS() compiler {

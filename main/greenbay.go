@@ -75,7 +75,7 @@ func buildApp() *cli.App {
 // logging setup is separate to make it unit testable
 func loggingSetup(name, level string) {
 	grip.SetName(name)
-	grip.SetThreshold(level)
+	_ = grip.SetThreshold(level)
 }
 
 func addConfArg(a ...cli.Flag) []cli.Flag {
