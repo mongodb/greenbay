@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -16,7 +17,6 @@ import (
 	"github.com/mongodb/grip/message"
 	"github.com/pkg/errors"
 	"github.com/tychoish/gimlet"
-	"golang.org/x/net/context"
 )
 
 // GreenbayService holds the configuration and operations for running

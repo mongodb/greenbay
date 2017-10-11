@@ -3,8 +3,6 @@ updated: 2016-06-16T14:14:58.047959949-04:00
 imports:
 - name: github.com/pkg/errors
   version: ff09b135c25aae272398c51a07235b90a75aa4f0
-- name: golang.org/x/net
-  version: 1358eff22f0dd0c54fc521042cc607f6ff4b531a
 - name: gopkg.in/yaml.v2
   version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: github.com/urfave/cli
@@ -13,8 +11,6 @@ imports:
   version: aea32c919a18e5ef4537bbd283ff29594b1b0165
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
-- name: github.com/mongodb/amboy
-  version: eaa53332cc5dd55288fc75d3f6b5c20766d74c7f
 - name: github.com/pmezard/go-difflib
   version: 792786c7400a136282c1664665ae0a8db921c6c2
 - name: github.com/satori/go.uuid
@@ -23,11 +19,15 @@ imports:
   version: 1a9d0bb9f541897e62256577b352fdbc1fb4fd94
 - name: github.com/stretchr/testify
   version: d77da356e56a7428ad25149ca77381849a6a5232
-- name: github.com/mongodb/grip
-  version: dd0a2c479652bd858db82525ad2db2ac87663571
 - name: github.com/ghodss/yaml
   version: bea76d6a4713e18b7f5321a2b020738552def3ea
 - name: golang.org/x/sys/windows/registry
   version: 16e60ce6821cc44d9dc924a9f4866ad6ca076ebf
+
+
+- name: github.com/mongodb/amboy
+  version: edabf653dd57e474a24698553113017d715e4518
+- name: github.com/mongodb/grip
+  version: 4beebb80a809873037c5d9b370a9235f33cd3096
 - name: github.com/tychoish/gimlet
-  version: efde070a6840e91815e554de155dd8cec5f10ce8
+  version: 47913accb7804b3a72b1c0ad3e44ff94d9447f03

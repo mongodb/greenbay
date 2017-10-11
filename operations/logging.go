@@ -26,7 +26,7 @@ func SetupLogging(format string, fileName string) error {
 	case "json-file":
 		sender, err = send.MakeJSONFileLogger(fileName)
 	case "systemd":
-		sender = setupSystemdLogging()
+		sender, err = setupSystemdLogging()
 	case "syslog":
 		sender = setupSyslogLogging()
 	default:

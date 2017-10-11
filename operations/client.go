@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-	"golang.org/x/net/context"
 )
 
 // GreenbayClient provides all of the core greenbay operations by

@@ -15,6 +15,7 @@ output production, test running, and test configuration.
 package operations
 
 import (
+	"context"
 	"time"
 
 	"github.com/mongodb/amboy"
@@ -23,7 +24,6 @@ import (
 	"github.com/mongodb/greenbay/output"
 	"github.com/mongodb/grip"
 	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 )
 
 // GreenbayApp encapsulates the execution of a greenbay run. You can

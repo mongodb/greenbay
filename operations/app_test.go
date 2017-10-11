@@ -1,13 +1,13 @@
 package operations
 
 import (
+	"context"
 	"testing"
 
 	"github.com/mongodb/greenbay/check"
 	"github.com/mongodb/greenbay/config"
 	"github.com/mongodb/greenbay/output"
 	"github.com/stretchr/testify/suite"
-	"golang.org/x/net/context"
 )
 
 type AppSuite struct {
