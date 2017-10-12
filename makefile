@@ -113,18 +113,11 @@ lint-%:$(buildDir)/output.%.lint
 
 # start vendoring configuration
 vendor-clean:
-	rm -rf vendor/github.com/stretchr/testify/vendor/
-	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/davecgh/
-	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/pmezard/
-	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/stretchr/
-	rm -rf vendor/github.com/mongodb/grip/vendor/golang.org/x/net/
+	rm -rf vendor/github.com/mongodb/grip/vendor/github.com/stretchr/testify/
 	rm -rf vendor/github.com/mongodb/amboy/vendor/github.com/mongodb/grip/
 	rm -rf vendor/github.com/mongodb/amboy/vendor/github.com/tychoish/gimlet/
 	rm -rf vendor/github.com/mongodb/amboy/vendor/github.com/stretchr/testify/
-	rm -rf vendor/github.com/mongodb/amboy/vendor/golang.org/x/net/
-	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/stretchr/
-	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/davecgh/
-	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/pmezard/
+	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/stretchr/testify/
 	rm -rf vendor/github.com/tychoish/gimlet/vendor/github.com/mongodb/grip/
 	find vendor/ -name "*.gif" -o -name "*.gz" -o -name "*.png" -o -name "*.ico" -o -name "*testdata*"| xargs rm -rf
 phony += vendor-clean
