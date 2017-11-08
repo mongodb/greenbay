@@ -14,6 +14,7 @@ import (
 	"github.com/mongodb/greenbay/check"
 	"github.com/mongodb/greenbay/operations"
 	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/level"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -65,17 +66,21 @@ func buildApp() *cli.App {
 	}
 
 	app.Before = func(c *cli.Context) error {
-		loggingSetup(app.Name, c.String("level"))
-		return nil
+		return loggingSetup(app.Name, c.String("level"))
 	}
 
 	return app
 }
 
 // logging setup is separate to make it unit testable
-func loggingSetup(name, level string) {
+func loggingSetup(name, l string) error {
 	grip.SetName(name)
-	_ = grip.SetThreshold(level)
+
+	sender := grip.GetSender()
+	info := sender.Level()
+	info.Threshold = level.FromString(l)
+
+	return sender.SetLevel(info)
 }
 
 func addConfArg(a ...cli.Flag) []cli.Flag {

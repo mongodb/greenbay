@@ -104,7 +104,7 @@ func (a *GreenbayApp) Run(ctx context.Context) error {
 	amboy.WaitCtxInterval(ctx, q, 10*time.Millisecond)
 
 	grip.Noticef("checks complete in [num=%d, runtime=%s] ", stats.Total, time.Since(start))
-	if err := a.Output.ProduceResults(q); err != nil {
+	if err := a.Output.ProduceResults(ctx, q); err != nil {
 		return errors.Wrap(err, "problems encountered during tests")
 	}
 

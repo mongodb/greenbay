@@ -1,6 +1,8 @@
 package output
 
 import (
+	"context"
+
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/greenbay"
 	"github.com/mongodb/grip"
@@ -57,12 +59,12 @@ func (o *Options) GetResultsProducer() (ResultsProducer, error) {
 // according to the options specified in the Options
 // structure. ProduceResults returns an error if any of the tests
 // failed in the operation.
-func (o *Options) ProduceResults(q amboy.Queue) error {
+func (o *Options) ProduceResults(ctx context.Context, q amboy.Queue) error {
 	if q == nil {
 		return errors.New("cannot populate results with a nil queue")
 	}
 
-	return o.CollectResults(q.Results())
+	return o.CollectResults(q.Results(ctx))
 }
 
 // CollectResults takes a channel that produces jobs and produces results
