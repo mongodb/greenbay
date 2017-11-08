@@ -154,14 +154,14 @@ func (s *GreenbayService) runAdhocTests(jobs <-chan config.JobWithError) (interf
 		return nil, catcher.Resolve()
 	}
 
-	ctx, cancel := context.WithTimeout(context.TODO(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Minute)
 	defer cancel()
 	amboy.WaitCtxInterval(ctx, q, 10*time.Millisecond)
 	if ctx.Err() != nil {
 		return nil, errors.New("check operation timedout")
 	}
 
-	output, err := s.output.Report(q.Results())
+	output, err := s.output.Report(q.Results(ctx))
 	if err != nil {
 		return nil, err
 	}

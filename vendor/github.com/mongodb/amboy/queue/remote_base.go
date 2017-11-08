@@ -33,7 +33,11 @@ func newRemoteBase() *remoteBase {
 // same job to a queue more than once, but this depends on the
 // implementation of the underlying driver.
 func (q *remoteBase) Put(j amboy.Job) error {
-	return q.driver.Save(j)
+	if j.Type().Version < 0 {
+		return errors.New("cannot add jobs with versions less than 0")
+	}
+
+	return q.driver.Put(j)
 }
 
 // Get retrieves a job from the queue's storage. The second value
@@ -120,11 +124,14 @@ func (q *remoteBase) Complete(ctx context.Context, j amboy.Job) {
 }
 
 // Results provides a generator that iterates all completed jobs.
-func (q *remoteBase) Results() <-chan amboy.Job {
+func (q *remoteBase) Results(ctx context.Context) <-chan amboy.Job {
 	output := make(chan amboy.Job)
 	go func() {
 		defer close(output)
 		for j := range q.driver.Jobs() {
+			if ctx.Err() != nil {
+				return
+			}
 			if j.Status().Completed {
 				output <- j
 			}
@@ -132,6 +139,10 @@ func (q *remoteBase) Results() <-chan amboy.Job {
 		}
 	}()
 	return output
+}
+
+func (q *remoteBase) JobStats(ctx context.Context) <-chan amboy.JobStatusInfo {
+	return q.driver.JobStats(ctx)
 }
 
 // Stats returns a amboy.QueueStats object that reflects the progress
