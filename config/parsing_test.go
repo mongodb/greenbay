@@ -35,7 +35,7 @@ func TestGetFormatFromFileName(t *testing.T) {
 }
 
 func TestGetJsonConfig(t *testing.T) {
-	assert := assert.New(t)
+	assert := assert.New(t) // nolint
 
 	inputs := [][]byte{
 		[]byte{},

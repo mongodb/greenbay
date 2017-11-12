@@ -8,7 +8,7 @@ import (
 )
 
 func TestCompileCheckFailsForInvalidCompilerInterfaces(t *testing.T) {
-	assert := assert.New(t)
+	assert := assert.New(t) // nolint
 	check := &compileCheck{Base: NewBase("foo", 0)}
 	comp := &compileScript{}
 
@@ -24,7 +24,7 @@ func TestCompileCheckFailsForInvalidCompilerInterfaces(t *testing.T) {
 }
 
 func TestCompilerImplementationsAreNotValidInDefaultState(t *testing.T) {
-	assert := assert.New(t)
+	assert := assert.New(t) // nolint
 
 	comps := []compiler{
 		&compileGCC{},

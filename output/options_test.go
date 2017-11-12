@@ -45,9 +45,9 @@ func (s *OptionsSuite) SetupSuite() {
 	s.require.NoError(s.queue.Start(ctx))
 	num := 5
 	for i := 0; i < num; i++ {
-		check := &mockCheck{Base: check.Base{Base: &job.Base{}}}
-		check.SetID(fmt.Sprintf("mock-check-%d", i))
-		s.NoError(s.queue.Put(check))
+		c := &mockCheck{Base: check.Base{Base: &job.Base{}}}
+		c.SetID(fmt.Sprintf("mock-check-%d", i))
+		s.NoError(s.queue.Put(c))
 	}
 	s.Equal(num, s.queue.Stats().Total)
 	amboy.Wait(s.queue)
@@ -107,7 +107,7 @@ func (s *OptionsSuite) TestResultsProducderGeneratorErrorsWithInvalidFormat() {
 func (s *OptionsSuite) TestResultsProducerOperationFailsWIthInvaildFormat() {
 	for _, format := range []string{"foo", "bar", "nothing", "NIL"} {
 		s.opts.format = format
-		err := s.opts.ProduceResults(nil)
+		err := s.opts.ProduceResults(context.TODO(), nil)
 		s.Error(err)
 	}
 }
@@ -123,11 +123,12 @@ func (s *OptionsSuite) TestGetResultsProducerForValidFormats() {
 }
 
 func (s *OptionsSuite) TestResultsProducerOperationReturnsErrorWithNilQueue() {
+	ctx := context.Background()
 	for _, format := range []string{"gotest", "result", "log"} {
 		opt, err := NewOptions("", format, true)
 		s.NoError(err)
 
-		s.Error(opt.ProduceResults(nil))
+		s.Error(opt.ProduceResults(ctx, nil))
 	}
 }
 
@@ -136,7 +137,7 @@ func (s *OptionsSuite) TestResultsToStandardOutButNotPrint() {
 		opt, err := NewOptions("", format, true)
 		s.NoError(err)
 
-		s.NoError(opt.ProduceResults(s.queue))
+		s.NoError(opt.ProduceResults(context.Background(), s.queue))
 	}
 }
 
@@ -146,7 +147,7 @@ func (s *OptionsSuite) TestResultsToFileOnly() {
 		opt, err := NewOptions(fn, format, false)
 
 		s.NoError(err)
-		s.NoError(opt.ProduceResults(s.queue))
+		s.NoError(opt.ProduceResults(context.Background(), s.queue))
 	}
 }
 
@@ -156,6 +157,6 @@ func (s *OptionsSuite) TestResultsToFileAndOutput() {
 		opt, err := NewOptions(fn, format, true)
 
 		s.NoError(err)
-		s.NoError(opt.ProduceResults(s.queue))
+		s.NoError(opt.ProduceResults(context.Background(), s.queue))
 	}
 }

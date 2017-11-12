@@ -40,7 +40,7 @@ func TestConverter(t *testing.T) {
 }
 
 func TestJobToCheckGenerator(t *testing.T) {
-	assert := assert.New(t)
+	assert := assert.New(t) // nolint
 	input := make(chan amboy.Job)
 	output := jobsToCheck(input)
 

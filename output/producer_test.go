@@ -84,17 +84,17 @@ func (s *ProducerSuite) SetupSuite() {
 	s.require.NoError(err)
 	s.tmpDir = tmpDir
 	for i := 0; i < 10; i++ {
-		check := &mockCheck{Base: check.Base{Base: &job.Base{}}}
-		check.SetID(fmt.Sprintf("mock-check-%d", i))
+		c := &mockCheck{Base: check.Base{Base: &job.Base{}}}
+		c.SetID(fmt.Sprintf("mock-check-%d", i))
 		if i%3 == 0 {
-			check.Base.Message = fmt.Sprintf("count=%d", i)
+			c.Base.Message = fmt.Sprintf("count=%d", i)
 		}
 
 		if i%2 == 0 {
-			check.Base.Errors = []string{"even"}
+			c.Base.Errors = []string{"even"}
 		}
 
-		s.NoError(s.queue.Put(check))
+		s.NoError(s.queue.Put(c))
 	}
 
 	amboy.Wait(s.queue)
@@ -112,29 +112,30 @@ func (s *ProducerSuite) TearDownSuite() {
 // Test cases:
 
 func (s *ProducerSuite) TestPopulateOperationDoNotErrorWithBasicTasks() {
-	s.NoError(s.results.Populate(s.queue.Results()))
+	s.NoError(s.results.Populate(s.queue.Results(context.Background())))
 }
 
 func (s *ProducerSuite) TestOutputMethodsFailIfJobsHaveErrors() {
-
+	ctx := context.Background()
 	// everything is a pointer inside the queue so this should work:
-	for t := range s.queue.Results() {
+	for t := range s.queue.Results(ctx) {
 		task := t.(*mockCheck)
 		task.Base.WasSuccessful = false
 	}
 
-	s.NoError(s.results.Populate(s.queue.Results()))
+	s.NoError(s.results.Populate(s.queue.Results(ctx)))
 
 	s.Error(s.results.ToFile(filepath.Join(s.tmpDir, "one")))
 
-	for t := range s.queue.Results() {
+	for t := range s.queue.Results(ctx) {
 		task := t.(*mockCheck)
 		task.Base.WasSuccessful = true
 	}
 }
 
 func (s *ProducerSuite) TestPrintMethodReturnsNoErrorIfAllOperationsAreSuccessful() {
-	s.NoError(s.results.Populate(s.queue.Results()))
+	ctx := context.Background()
+	s.NoError(s.results.Populate(s.queue.Results(ctx)))
 
 	if s.isGoTest {
 		s.Suite.T().Skip("skipping printing results for go test because it is confusing")
@@ -146,7 +147,7 @@ func (s *ProducerSuite) TestPrintMethodReturnsNoErrorIfAllOperationsAreSuccessfu
 }
 
 func (s *ProducerSuite) TestToFileMethodReturnsNoErrorIfAllOperationsAreSuccessful() {
-	s.NoError(s.results.Populate(s.queue.Results()))
+	s.NoError(s.results.Populate(s.queue.Results(context.Background())))
 
 	err := s.results.ToFile(filepath.Join(s.tmpDir, "two"))
 	grip.Error(err)
@@ -162,11 +163,11 @@ func (s *ProducerSuite) TestWithQueueAndInvalidJobs() {
 
 	s.NoError(q.Put(job.NewShellJob("echo foo", "")))
 	amboy.Wait(q)
-	s.Error(s.results.Populate(q.Results()))
+	s.Error(s.results.Populate(q.Results(ctx)))
 }
 
 func (s *ProducerSuite) TestToFileMethodShouldFailOnNonWriteableFiles() {
-	s.NoError(s.results.Populate(s.queue.Results()))
+	s.NoError(s.results.Populate(s.queue.Results(context.Background())))
 
 	fn := filepath.Join(s.tmpDir, "foo", "three")
 	_, err := os.Stat(fn)

@@ -20,8 +20,8 @@ func fileExistsFactoryFactory(name string, require *require.Assertions) func() *
 }
 
 func TestFileExistsCheckImplementation(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
+	assert := assert.New(t)   // nolint
+	require := require.New(t) // nolint
 	checkFactory := fileExistsFactoryFactory("file-exists", require)
 
 	var check *fileExistance
@@ -51,8 +51,8 @@ func TestFileExistsCheckImplementation(t *testing.T) {
 }
 
 func TestFileDoesNotExistCheckImplementation(t *testing.T) {
-	assert := assert.New(t)
-	require := require.New(t)
+	assert := assert.New(t)   // nolint
+	require := require.New(t) // nolint
 	checkFactory := fileExistsFactoryFactory("file-does-not-exist", require)
 
 	var check *fileExistance

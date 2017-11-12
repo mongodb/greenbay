@@ -88,5 +88,5 @@ func (s *RegistrySuite) TestRegistryProducesDifferentObjects() {
 	s.True(ok)
 	f2, ok := s.registry.get("g")
 	s.True(ok)
-	s.NotEqual(f1, f2)
+	s.NotEqual(fmt.Sprint(f1), fmt.Sprint(f2))
 }

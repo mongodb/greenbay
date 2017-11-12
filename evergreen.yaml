@@ -252,16 +252,6 @@ buildvariants:
       - ".test"
 
   # the following targets *just* cross compile the binary for different architectures.
-  - name: solaris
-    display_name: "Solaris (cross-compile)"
-    expansions:
-      build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
-      xc_env: "GOARCH=amd64 GOOS=solaris"
-    run_on:
-      *generic-linux-distros
-    tasks:
-      - ".dist"
-
   - name: s390x
     display_name: "zLinux (cross-compile)"
     expansions:

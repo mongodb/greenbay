@@ -15,6 +15,7 @@ import (
 	"github.com/mongodb/greenbay/operations"
 	"github.com/mongodb/grip"
 	"github.com/mongodb/grip/level"
+	"github.com/mongodb/grip/send"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
@@ -74,6 +75,9 @@ func buildApp() *cli.App {
 
 // logging setup is separate to make it unit testable
 func loggingSetup(name, l string) error {
+	if err := grip.SetSender(send.MakeErrorLogger()); err != nil {
+		return err
+	}
 	grip.SetName(name)
 
 	sender := grip.GetSender()
@@ -166,7 +170,7 @@ func checks() cli.Command {
 		Flags: addArgs(
 			cli.IntFlag{
 				Name: "jobs",
-				Usage: fmt.Sprintf("specify the number of parallel tests to run. (Default %s)",
+				Usage: fmt.Sprintf("specify the number of parallel tests to run. (Default %d)",
 					defaultNumJobs),
 				Value: defaultNumJobs,
 			}),
