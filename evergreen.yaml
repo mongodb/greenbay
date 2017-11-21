@@ -202,15 +202,6 @@ post:
 #           Buildvariants             #
 #######################################
 buildvariants:
-  - name: archlinux
-    display_name: Arch Linux
-    run_on:
-      - archlinux-test
-      - archlinux-build
-    tasks:
-      - ".dist"
-      - ".test"
-
   - name: race-detector
     display_name: Race Detector (Arch Linux)
     run_on:
@@ -231,12 +222,12 @@ buildvariants:
       - ".dist"
       - ".test"
 
-  - name: debian81
-    display_name: Debian 8.1
+  - name: ubuntu1604
+    display_name: Ubuntu 16.04
+    run_on:
+      - ubuntu1604-test
     expansions:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
-    run_on:
-      - debian81-test
     tasks:
       - ".dist"
       - ".test"
