@@ -85,7 +85,6 @@ func (s *PythonModuleSuite) TestDefaultFixtureProducesPassingResult() {
 
 func (s *PythonModuleSuite) TestReturnsErrorWithInvalidComparator() {
 	s.check.Relationship = "neq"
-	s.Error(s.check.validate())
 
 	s.check.Run()
 	s.Error(s.check.Error())

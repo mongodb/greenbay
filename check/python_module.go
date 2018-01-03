@@ -44,24 +44,23 @@ func (c *pythonModuleVersion) validate() error {
 
 	switch c.Relationship {
 	case "":
-		grip.Debug("no relationship specified, using greater than or equal to (gte)")
-		c.Relationship = "gte"
+		if c.MinVersion != "" {
+			c.Relationship = "lte"
+		} else {
+			c.Relationship = "gte"
+		}
+
+		grip.Debugf("no relationship specified, using %s", c.Relationship)
 	case "gte", "lte", "lt", "gt", "eq":
 		grip.Debugln("relationship for '%s' check set to '%s'", c.ID(), c.Relationship)
-	default:
-		return errors.Errorf("relationship '%s' for check '%s' is invalid",
-			c.Relationship, c.ID())
 	}
 
 	switch c.MinRelationship {
 	case "":
-		grip.Debug("no relationship specified, using greater than or equal to (gte)")
+		grip.Debug("no min relationship specified, using greater than or equal to (gte)")
 		c.MinRelationship = "gte"
 	case "gte", "lte", "lt", "gt", "eq":
 		grip.Debugln("relationship for '%s' check set to '%s'", c.ID(), c.MinRelationship)
-	default:
-		return errors.Errorf("relationship '%s' for check '%s' is invalid",
-			c.MinRelationship, c.ID())
 	}
 
 	return nil
