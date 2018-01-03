@@ -127,3 +127,29 @@ func (s *PythonModuleSuite) TestReturnsErrorWhenExpectedValueDoesNotPassComparis
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
+
+func (s *PythonModuleSuite) TestMinMaxVersionPasses() {
+	s.check.Version = "1.1.0"
+	s.check.MinVersion = "1.0.0"
+	s.check.Statement = "'1.0.9'"
+	s.check.Relationship = "lte"
+
+	s.NoError(s.check.validate())
+
+	s.check.Run()
+	s.True(s.check.Error() == nil)
+	s.True(s.check.Output().Passed)
+}
+
+func (s *PythonModuleSuite) TestMinMaxVersionReturnsErrorWhenExpectedValueDoesNotPassComparison() {
+	s.check.Version = "1.1.0"
+	s.check.MinVersion = "1.0.0"
+	s.check.Statement = "'1.1.9'"
+	s.check.Relationship = "lte"
+
+	s.NoError(s.check.validate())
+
+	s.check.Run()
+	s.Error(s.check.Error())
+	s.False(s.check.Output().Passed)
+}
