@@ -27,6 +27,8 @@ type pythonModuleVersion struct {
 	Module            string `bson:"module" json:"module" yaml:"module"`
 	Statement         string `bson:"statement" json:"statement" yaml:"statement"`
 	Version           string `bson:"version" json:"version" yaml:"version"`
+	MinVersion        string `bson:"minVersion" json:"minVersion" yaml:"minVersion"`
+	MinRelationship   string `bson:"minRelationship" json:"minRelationship" yaml:"minRelationship"`
 	PythonInterpreter string `bson:"python" json:"python" yaml:"python"`
 	Relationship      string `bson:"relationship" json:"relationship" yaml:"relationship"`
 	*Base             `bson:"metadata" json:"metadata" yaml:"metadata"`
@@ -42,13 +44,23 @@ func (c *pythonModuleVersion) validate() error {
 
 	switch c.Relationship {
 	case "":
-		grip.Debug("no relationship specified, using greater than or equal to (gte)")
-		c.Relationship = "gte"
+		if c.MinVersion != "" {
+			c.Relationship = "lte"
+		} else {
+			c.Relationship = "gte"
+		}
+
+		grip.Debugf("no relationship specified, using %s", c.Relationship)
 	case "gte", "lte", "lt", "gt", "eq":
 		grip.Debugln("relationship for '%s' check set to '%s'", c.ID(), c.Relationship)
-	default:
-		return errors.Errorf("relationship '%s' for check '%s' is invalid",
-			c.Relationship, c.ID())
+	}
+
+	switch c.MinRelationship {
+	case "":
+		grip.Debug("no min relationship specified, using greater than or equal to (gte)")
+		c.MinRelationship = "gte"
+	case "gte", "lte", "lt", "gt", "eq":
+		grip.Debugln("relationship for '%s' check set to '%s'", c.ID(), c.MinRelationship)
 	}
 
 	return nil
@@ -71,6 +83,17 @@ func (c *pythonModuleVersion) Run() {
 		c.AddError(err)
 		c.setMessage(fmt.Sprintf("could not parse expected version '%s'", c.Version))
 		return
+	}
+
+	var minExpected semver.Version
+	if c.MinVersion != "" {
+		minExpected, err = semver.Parse(c.MinVersion)
+		if err != nil {
+			c.setState(false)
+			c.AddError(err)
+			c.setMessage(fmt.Sprintf("could not parse expected version '%s'", c.Version))
+			return
+		}
 	}
 
 	cmdArgs := []string{
@@ -97,13 +120,25 @@ func (c *pythonModuleVersion) Run() {
 		return
 	}
 
-	result, err := compareVersions(c.Relationship, parsed, expected)
+	var result bool
+	result, err = compareVersions(c.Relationship, parsed, expected)
 	if err != nil {
 		// this should be unreachable, because the earlier
 		// validate will have caught it.
 		c.setState(false)
 		c.AddError(err)
 		return
+	}
+
+	if c.MinVersion != "" {
+		gteMin, err := compareVersions(c.MinRelationship, parsed, minExpected)
+		if err != nil {
+			c.setState(false)
+			c.AddError(err)
+			return
+		}
+
+		result = result && gteMin
 	}
 
 	if !result {
