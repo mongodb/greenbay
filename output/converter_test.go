@@ -42,7 +42,7 @@ func TestConverter(t *testing.T) {
 func TestJobToCheckGenerator(t *testing.T) {
 	assert := assert.New(t) // nolint
 	input := make(chan amboy.Job)
-	output := jobsToCheck(input)
+	output := jobsToCheck(false, input)
 
 	i := &mockCheck{Base: check.Base{Base: &job.Base{}}}
 	assert.Implements((*amboy.Job)(nil), i)

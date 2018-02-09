@@ -24,7 +24,7 @@ func (r *GripOutput) Populate(jobs <-chan amboy.Job) error {
 
 	r.useJSONLoggers = false
 
-	for wu := range jobsToCheck(jobs) {
+	for wu := range jobsToCheck(r.skipPassing, jobs) {
 		if wu.err != nil {
 			catcher.Add(wu.err)
 			continue
@@ -57,7 +57,7 @@ func (r *JSONResults) Populate(jobs <-chan amboy.Job) error {
 	catcher := grip.NewCatcher()
 	r.useJSONLoggers = true
 
-	for wu := range jobsToCheck(jobs) {
+	for wu := range jobsToCheck(r.skipPassing, jobs) {
 		if wu.err != nil {
 			catcher.Add(wu.err)
 			continue
@@ -73,9 +73,13 @@ func (r *JSONResults) Populate(jobs <-chan amboy.Job) error {
 
 type gripOutputData struct {
 	useJSONLoggers bool
+	skipPassing    bool
 	passedMsgs     []message.Composer
 	failedMsgs     []message.Composer
 }
+
+// SkipPassing causes the reporter to skip all passing tests in the report.
+func (r *gripOutputData) SkipPassing() { r.skipPassing = true }
 
 // ToFile logs, to the specified file, the results of the greenbay
 // operation. If any tasks failed, this operation returns an error.
