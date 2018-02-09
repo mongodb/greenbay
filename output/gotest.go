@@ -16,15 +16,19 @@ import (
 // GoTest defines a ResultsProducer implementation that generates
 // output in the format of "go test -v"
 type GoTest struct {
-	numFailed int
-	buf       *bytes.Buffer
+	skipPassing bool
+	numFailed   int
+	buf         *bytes.Buffer
 }
+
+// SkipPassing causes the reporter to skip all passing tests in the report.
+func (r *GoTest) SkipPassing() { r.skipPassing = true }
 
 // Populate generates output, based on the content (via the Results()
 // method) of an amboy.Queue instance. All jobs processed by that
 // queue must also implement the greenbay.Checker interface.
 func (r *GoTest) Populate(jobs <-chan amboy.Job) error {
-	numFailed, err := produceResults(r.buf, jobsToCheck(jobs))
+	numFailed, err := produceResults(r.buf, jobsToCheck(r.skipPassing, jobs))
 
 	if err != nil {
 		return errors.Wrap(err, "problem generating gotest results")

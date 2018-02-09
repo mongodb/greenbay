@@ -13,9 +13,13 @@ import (
 
 // Report implements a single machine-parsable json format for results, for use in the rest API
 type Report struct {
-	results   map[string]*greenbay.CheckOutput
-	hasErrors bool
+	hasErrors   bool
+	skipPassing bool
+	results     map[string]*greenbay.CheckOutput
 }
+
+// SkipPassing causes the reporter to skip all passing tests in the report.
+func (r *Report) SkipPassing() { r.skipPassing = true }
 
 // Populate generates output, based on the content (via the Results()
 // method) of an amboy.Queue instance. All jobs processed by that
@@ -24,7 +28,7 @@ func (r *Report) Populate(jobs <-chan amboy.Job) error {
 	r.results = make(map[string]*greenbay.CheckOutput)
 	catcher := grip.NewCatcher()
 
-	for check := range jobsToCheck(jobs) {
+	for check := range jobsToCheck(r.skipPassing, jobs) {
 		if check.err != nil {
 			r.hasErrors = true
 			catcher.Add(check.err)

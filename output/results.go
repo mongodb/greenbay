@@ -23,8 +23,12 @@ import (
 // Results defines a ResultsProducer implementation for the Evergreen
 // results.json output format.
 type Results struct {
-	out *resultsDocument
+	skipPassing bool
+	out         *resultsDocument
 }
+
+// SkipPassing causes the reporter to skip all passing tests in the report.
+func (r *Results) SkipPassing() { r.skipPassing = true }
 
 // Populate generates output, based on the content (via the Results()
 // method) of an amboy.Queue instance. All jobs processed by that
@@ -32,7 +36,7 @@ type Results struct {
 func (r *Results) Populate(jobs <-chan amboy.Job) error {
 	r.out = &resultsDocument{}
 
-	if err := r.out.populate(jobsToCheck(jobs)); err != nil {
+	if err := r.out.populate(jobsToCheck(r.skipPassing, jobs)); err != nil {
 		return errors.Wrap(err, "problem constructing results document")
 	}
 

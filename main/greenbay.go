@@ -118,7 +118,7 @@ func addArgs(a ...cli.Flag) []cli.Flag {
 		},
 		cli.BoolFlag{
 			Name:  "quiet",
-			Usage: "specify to disable printed (standard output) results",
+			Usage: "specify to only print failing tests",
 		},
 		cli.StringFlag{
 			Name: "format",

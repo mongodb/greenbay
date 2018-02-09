@@ -14,7 +14,7 @@ type workUnit struct {
 // jobsToCheck converts a channel of amboy.Job objects to
 // greenbay.Checker interface. If a job object is not able to be
 // converted to greenbay.Checker, this operation panics.
-func jobsToCheck(jobs <-chan amboy.Job) <-chan workUnit {
+func jobsToCheck(skipPassing bool, jobs <-chan amboy.Job) <-chan workUnit {
 	output := make(chan workUnit)
 
 	go func() {
@@ -27,9 +27,13 @@ func jobsToCheck(jobs <-chan amboy.Job) <-chan workUnit {
 				}
 				continue
 			}
+			o := c.Output()
+			if skipPassing && o.Passed {
+				continue
+			}
 
 			output <- workUnit{
-				output: c.Output(),
+				output: o,
 				err:    nil,
 			}
 		}

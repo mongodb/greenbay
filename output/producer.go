@@ -24,4 +24,8 @@ type ResultsProducer interface {
 	// format. Returns an error if the results in the format have
 	// any failed checks.
 	Print() error
+
+	// SkipPassing causes the reporter to skip all passing tests
+	// in the report.
+	SkipPassing()
 }

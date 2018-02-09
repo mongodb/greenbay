@@ -64,11 +64,11 @@ func (s *OptionsSuite) TearDownSuite() {
 
 // Test cases:
 
-func (s *OptionsSuite) TestConstructorInvertsValueOfQuietArgument() {
+func (s *OptionsSuite) TestConstructorDoesNotInvertsValueOfQuietArgument() {
 	for _, q := range []bool{true, false} {
 		opt, err := NewOptions("", "gotest", q)
 		s.NoError(err)
-		s.Equal(!q, opt.writeStdOut)
+		s.Equal(q, opt.suppressPassing)
 	}
 }
 

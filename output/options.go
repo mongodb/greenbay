@@ -13,10 +13,10 @@ import (
 // provides methods for accessing and producing results using that
 // configuration regardless of underlying output format.
 type Options struct {
-	writeFile   bool
-	writeStdOut bool
-	fn          string
-	format      string
+	writeFile       bool
+	suppressPassing bool
+	fn              string
+	format          string
 }
 
 // NewOptions provides a constructor to generate a valid Options
@@ -30,7 +30,7 @@ func NewOptions(fn, format string, quiet bool) (*Options, error) {
 
 	o := &Options{}
 	o.format = format
-	o.writeStdOut = !quiet
+	o.suppressPassing = quiet
 
 	if fn != "" {
 		o.writeFile = true
@@ -51,6 +51,9 @@ func (o *Options) GetResultsProducer() (ResultsProducer, error) {
 	}
 
 	rp := factory()
+	if o.suppressPassing {
+		rp.SkipPassing()
+	}
 
 	return rp, nil
 }
@@ -84,9 +87,7 @@ func (o *Options) CollectResults(jobs <-chan amboy.Job) error {
 	// Actually write output to respective streems
 	catcher := grip.NewCatcher()
 
-	if o.writeStdOut {
-		catcher.Add(rp.Print())
-	}
+	catcher.Add(rp.Print())
 
 	if o.writeFile {
 		catcher.Add(rp.ToFile(o.fn))
