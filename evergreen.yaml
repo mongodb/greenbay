@@ -8,6 +8,7 @@ variables:
     name: test
     commands:
       - command: git.get_project
+        type: setup
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
@@ -21,18 +22,11 @@ variables:
       - name: build
     commands:
       - command: git.get_project
+        type: setup
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
         vars: { target: "${task_name}" }
-  - &generic-linux-distros
-    - rhel62-test
-    - rhel70-small
-    - rhel62-small
-    - linux-64-amzn-test
-    - debian81-test
-    - debian71-test
-
 
 #######################################
 #              Functions              #
@@ -40,6 +34,7 @@ variables:
 functions:
   run-make:
     command: shell.exec
+    type: test
     params:
        script: |
          set -o errexit
@@ -68,11 +63,13 @@ tasks:
     tags: ["dist"]
     commands:
       - command: git.get_project
+        type: setup
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
         vars: { target: "build dist" }
       - command: s3.put
+        type: setup
         params:
           aws_key: ${aws_key}
           aws_secret: ${aws_secret}
@@ -95,18 +92,18 @@ tasks:
     tags: [ "report" ]
     commands:
       - command: git.get_project
+        type: setup
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
-        vars:
-          target: "coverage-html"
-          make_args: "-k"
+        target: "coverage-html"
+        make_args: "-k"
+
 
   # define tasks for all test suites (modules)
   - <<: *run-go-test-suite
     tags: ["test"]
     name: test-operations
-    tags: ["test"]
   - <<: *run-go-test-suite
     name: test-main
     tags: ["test"]
@@ -155,6 +152,7 @@ tasks:
     stepback: false
     commands:
       - command: s3Copy.copy
+        type: test
         params:
           aws_key: ${aws_key}
           aws_secret: ${aws_secret}
@@ -165,6 +163,7 @@ tasks:
 
 post:
   - command: gotest.parse_files
+    type: setup
     params:
       files:
         - "gopath/src/github.com/mongodb/greenbay/build/test.*.out"
@@ -175,7 +174,7 @@ post:
       script: |
         rm -rf greenbay
   - command: s3.put
-    type: system
+    type: setup
     params:
       aws_key: ${aws_key}
       aws_secret: ${aws_secret}
@@ -186,7 +185,7 @@ post:
       permissions: public-read
       display_name: "(html) coverage:"
   - command: s3.put
-    type: system
+    type: setup
     params:
       aws_key: ${aws_key}
       aws_secret: ${aws_secret}
@@ -206,7 +205,6 @@ buildvariants:
     display_name: Race Detector (Arch Linux)
     run_on:
       - archlinux-test
-      - archlinux-build
     tasks:
       - ".race"
       - ".report"
@@ -217,7 +215,6 @@ buildvariants:
       build_env: "PATH=/opt/go:$PATH"
     run_on:
       - rhel70-small
-      - rhel70
     tasks:
       - ".dist"
       - ".test"
@@ -249,7 +246,7 @@ buildvariants:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
       xc_env: "GOARCH=s390x GOOS=linux"
     run_on:
-      *generic-linux-distros
+      - ubuntu1604-test
     tasks:
       - ".dist"
 
@@ -259,7 +256,7 @@ buildvariants:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
       xc_env: "GOARCH=ppc64le GOOS=linux"
     run_on:
-      *generic-linux-distros
+      - ubuntu1604-test
     tasks:
       - ".dist"
 
@@ -269,7 +266,7 @@ buildvariants:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
       xc_env: "GOARCH=arm64 GOOS=linux"
     run_on:
-      *generic-linux-distros
+      - ubuntu1604-test
     tasks:
       - ".dist"
 
@@ -279,7 +276,7 @@ buildvariants:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
       xc_env: "GOARCH=386 GOOS=linux"
     run_on:
-      *generic-linux-distros
+      - ubuntu1604-test
     tasks:
       - ".dist"
 
@@ -289,7 +286,7 @@ buildvariants:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
       xc_env: "GOARCH=amd64 GOOS=windows"
     run_on:
-      *generic-linux-distros
+      - ubuntu1604-test
     tasks:
       - ".dist"
 
@@ -299,6 +296,6 @@ buildvariants:
       build_env: "PATH=/opt/go/bin:$PATH GOROOT=/opt/go"
       xc_env: "GOARCH=386 GOOS=windows"
     run_on:
-      *generic-linux-distros
+      - ubuntu1604-test
     tasks:
       - ".dist"
