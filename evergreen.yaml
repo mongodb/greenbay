@@ -13,20 +13,6 @@ variables:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
         vars: { target: "${task_name}" }
-  - &run-go-test-suite
-    # runs a make target and then uploads gotest output to
-    # evergreen. The test name should correspond to a make target for
-    # that suite
-    name: test
-    depends_on:
-      - name: build
-    commands:
-      - command: git.get_project
-        type: setup
-        params:
-          directory: gopath/src/github.com/mongodb/greenbay
-      - func: run-make
-        vars: { target: "${task_name}" }
 
 #######################################
 #              Functions              #
@@ -102,44 +88,44 @@ tasks:
 
 
   # define tasks for all test suites (modules)
-  - <<: *run-go-test-suite
+  - <<: *run-build
     tags: ["test"]
     name: test-operations
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: test-main
     tags: ["test"]
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: test-check
     tags: ["test"]
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: test-config
     tags: ["test"]
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: test-output
     tags: ["test"]
 
   # run the suites with the race detector (one variant only)
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: race-operations
     tags: ["race"]
     depends_on:
       - name: build-race
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: race-main
     tags: ["race"]
     depends_on:
       - name: build-race
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: race-check
     tags: ["race"]
     depends_on:
       - name: build-race
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: race-config
     tags: ["race"]
     depends_on:
       - name: build-race
-  - <<: *run-go-test-suite
+  - <<: *run-build
     name: race-output
     tags: ["race"]
     depends_on:
