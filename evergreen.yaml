@@ -8,7 +8,7 @@ variables:
     name: test
     commands:
       - command: git.get_project
-        type: setup
+        type: system
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
@@ -50,13 +50,13 @@ tasks:
     tags: ["dist"]
     commands:
       - command: git.get_project
-        type: setup
+        type: system
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
         vars: { target: "build dist" }
       - command: s3.put
-        type: setup
+        type: system
         params:
           aws_key: ${aws_key}
           aws_secret: ${aws_secret}
@@ -162,7 +162,7 @@ post:
       script: |
         rm -rf greenbay
   - command: s3.put
-    type: setup
+    type: system
     params:
       aws_key: ${aws_key}
       aws_secret: ${aws_secret}
@@ -173,7 +173,7 @@ post:
       permissions: public-read
       display_name: "(html) coverage:"
   - command: s3.put
-    type: setup
+    type: system
     params:
       aws_key: ${aws_key}
       aws_secret: ${aws_secret}
