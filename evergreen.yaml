@@ -96,8 +96,9 @@ tasks:
         params:
           directory: gopath/src/github.com/mongodb/greenbay
       - func: run-make
-        target: "coverage-html"
-        make_args: "-k"
+        vars: 
+          target: "coverage-html"
+          make_args: "-k"
 
 
   # define tasks for all test suites (modules)
