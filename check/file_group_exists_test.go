@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/mongodb/amboy/registry"
@@ -35,7 +36,7 @@ func (s *FileGroupSuite) TestWithInvalidRequirements() {
 	s.group.Requirements.Any = true
 
 	s.Error(s.group.Requirements.Validate())
-	s.group.Run()
+	s.group.Run(context.Background())
 
 	output := s.group.Output()
 	s.True(output.Completed)
@@ -48,7 +49,7 @@ func (s *FileGroupSuite) TestOneExtantFileWithAllRequirement() {
 	s.True(s.group.Requirements.All)
 	s.NoError(s.group.Requirements.Validate())
 
-	s.group.Run()
+	s.group.Run(context.Background())
 	output := s.group.Output()
 	s.True(output.Completed)
 	s.True(output.Passed)
@@ -60,7 +61,7 @@ func (s *FileGroupSuite) TestWithFilesThatExistAndDoNotExistWIthAllRequirement()
 	s.True(s.group.Requirements.All)
 	s.NoError(s.group.Requirements.Validate())
 
-	s.group.Run()
+	s.group.Run(context.Background())
 	output := s.group.Output()
 	s.True(output.Completed)
 	s.False(output.Passed)

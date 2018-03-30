@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -88,7 +89,7 @@ type compileCheck struct {
 	compiler      compiler
 }
 
-func (c *compileCheck) Run() {
+func (c *compileCheck) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

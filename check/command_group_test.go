@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -82,7 +83,7 @@ func (s *CmdGroupSuite) SetupTest() {
 func (s *CmdGroupSuite) TestWithInvalidGroupDefinition() {
 	s.check.Requirements = GroupRequirements{Name: s.name, All: true, None: true}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	output := s.check.Output()
 	s.False(output.Passed)
@@ -95,7 +96,7 @@ func (s *CmdGroupSuite) TestWithAllRequiredSucceed() {
 			makeShellJob(cmd, s.wd, willSucceed, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	output := s.check.Output()
 	s.True(output.Passed)
@@ -109,7 +110,7 @@ func (s *CmdGroupSuite) TestWithAnyRequiredSucceed() {
 			makeShellJob(cmd, s.wd, willSucceed, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	output := s.check.Output()
 	s.True(output.Passed)
@@ -131,7 +132,7 @@ func (s *CmdGroupSuite) TestWithOneRequiredSucceed() {
 			makeShellJob(cmd, s.wd, true, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	output := s.check.Output()
 	s.True(output.Passed)
@@ -145,7 +146,7 @@ func (s *CmdGroupSuite) TestWithNoneRequiredSucceed() {
 			makeShellJob(cmd, s.wd, !willSucceed, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	output := s.check.Output()
 	s.True(output.Passed)
@@ -158,7 +159,7 @@ func (s *CmdGroupSuite) TestWithAllRequiredSucceedToFail() {
 			makeShellJob(cmd, s.wd, true, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	output := s.check.Output()
 	s.False(output.Passed)
@@ -174,7 +175,7 @@ func (s *CmdGroupSuite) TestWithAnyRequiredSucceedToFail() {
 			makeShellJob(cmd, s.wd, true, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	output := s.check.Output()
 	s.False(output.Passed)
@@ -188,7 +189,7 @@ func (s *CmdGroupSuite) TestWithOneRequiredSucceedToFail() {
 			makeShellJob(cmd, s.wd, willSucceed, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	output := s.check.Output()
 	s.False(output.Passed)
@@ -202,7 +203,7 @@ func (s *CmdGroupSuite) TestWithNoneRequiredSucceedToFail() {
 			makeShellJob(cmd, s.wd, willSucceed, s.env))
 	}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	output := s.check.Output()
 	s.False(output.Passed)

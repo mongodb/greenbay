@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -67,7 +68,7 @@ func (s *CheckSuite) TestRunningTestsHasImpact() {
 	s.False(s.check.Status().Completed)
 	s.False(output.Passed)
 
-	s.check.Run()
+	s.check.Run(context.Background())
 
 	output = s.check.Output()
 	s.True(output.Completed)
@@ -75,7 +76,7 @@ func (s *CheckSuite) TestRunningTestsHasImpact() {
 }
 
 func (s *CheckSuite) TestFailedChecksShouldReturnErrors() {
-	s.check.Run()
+	s.check.Run(context.Background())
 	output := s.check.Output()
 	s.True(s.check.Status().Completed)
 

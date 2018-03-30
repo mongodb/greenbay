@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -17,7 +18,7 @@ func TestLimitCheckImplementation(t *testing.T) {
 		},
 	}
 
-	check.Run()
+	check.Run(context.Background())
 	assert.Error(check.Error())
 	assert.False(check.Output().Passed)
 
@@ -28,7 +29,7 @@ func TestLimitCheckImplementation(t *testing.T) {
 		},
 	}
 
-	check.Run()
+	check.Run(context.Background())
 	assert.Error(check.Error())
 	assert.False(check.Output().Passed)
 }

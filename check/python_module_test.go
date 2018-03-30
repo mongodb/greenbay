@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ func (s *PythonModuleSuite) TestDefaultFixtureProducesPassingResult() {
 	// the default fixture as above should pass, this case just
 	// confirms that.
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	output := s.check.Output()
 	s.True(output.Passed, output.Error)
@@ -85,9 +86,11 @@ func (s *PythonModuleSuite) TestDefaultFixtureProducesPassingResult() {
 
 func (s *PythonModuleSuite) TestReturnsErrorWithInvalidComparator() {
 	s.check.Relationship = "neq"
-	s.Error(s.check.validate())
+	// this is probably logically invalid but we removed this as an error as part of MAKE-330
+	// the current test enforces the new behavior
+	s.NoError(s.check.validate())
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -96,7 +99,7 @@ func (s *PythonModuleSuite) TestReturnsErrorIfCommandFails() {
 	// triggering a failure by messing up pythonInterpreter
 
 	s.check.PythonInterpreter = "py\thon"
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -104,7 +107,7 @@ func (s *PythonModuleSuite) TestReturnsErrorIfCommandFails() {
 func (s *PythonModuleSuite) TestInvalidVersionsReturnedByOutputTriggerErrors() {
 	s.check.Statement = "100000"
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -112,7 +115,7 @@ func (s *PythonModuleSuite) TestInvalidVersionsReturnedByOutputTriggerErrors() {
 func (s *PythonModuleSuite) TestInvalidExpectedVersionTriggersError() {
 	s.check.Version = "100000"
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -123,7 +126,7 @@ func (s *PythonModuleSuite) TestReturnsErrorWhenExpectedValueDoesNotPassComparis
 	s.NoError(s.check.validate())
 	s.Equal("eq", s.check.Relationship)
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }

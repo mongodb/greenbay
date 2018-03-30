@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -41,7 +42,7 @@ type shellOperation struct {
 	shouldFail bool
 }
 
-func (c *shellOperation) Run() {
+func (c *shellOperation) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

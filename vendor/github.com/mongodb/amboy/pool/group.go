@@ -14,9 +14,11 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/message"
 	"github.com/mongodb/grip/recovery"
 )
 
@@ -205,9 +207,29 @@ func groupWorker(ctx context.Context, wg *sync.WaitGroup, name string, work <-ch
 		case <-ctx.Done():
 			return
 		default:
-			unit.j.Run()
+			ti := amboy.JobTimeInfo{
+				Start: time.Now(),
+			}
+
+			runJob(ctx, unit.j)
+
+			unit.j.UpdateTimeInfo(ti)
 			unit.q.Complete(ctx, unit.j)
+			ti.End = time.Now()
+			unit.j.UpdateTimeInfo(ti)
+			r := message.Fields{
+				"job_type":      unit.j.Type().Name,
+				"job":           unit.j.ID(),
+				"duration_secs": ti.Duration().Seconds(),
+				"pool":          "group",
+				"queue_type":    fmt.Sprintf("%T", unit.q),
+			}
+			if err := unit.j.Error(); err != nil {
+				r["error"] = err.Error()
+			}
+			grip.Debug(r)
 		}
+
 	}
 	grip.Debugf("worker (%s) exiting", name)
 }

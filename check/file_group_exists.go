@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -34,7 +35,7 @@ type fileGroup struct {
 	*Base        `bson:"metadata" json:"metadata" yaml:"metadata"`
 }
 
-func (c *fileGroup) Run() {
+func (c *fileGroup) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

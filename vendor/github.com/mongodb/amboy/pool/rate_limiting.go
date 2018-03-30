@@ -13,11 +13,14 @@ package pool
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mongodb/amboy"
 	"github.com/mongodb/grip"
+	"github.com/mongodb/grip/message"
 	"github.com/mongodb/grip/recovery"
 )
 
@@ -60,6 +63,7 @@ type simpleRateLimited struct {
 	interval time.Duration
 	queue    amboy.Queue
 	canceler context.CancelFunc
+	wg       sync.WaitGroup
 }
 
 func (p *simpleRateLimited) Started() bool { return p.canceler != nil }
@@ -73,7 +77,7 @@ func (p *simpleRateLimited) Start(ctx context.Context) error {
 
 	ctx, p.canceler = context.WithCancel(ctx)
 
-	jobs := startWorkerServer(ctx, p.queue)
+	jobs := startWorkerServer(ctx, p.queue, &p.wg)
 
 	// start some threads
 	for w := 1; w <= p.size; w++ {
@@ -88,6 +92,8 @@ func (p *simpleRateLimited) worker(ctx context.Context, jobs <-chan amboy.Job) {
 		err error
 		job amboy.Job
 	)
+	p.wg.Add(1)
+	defer p.wg.Done()
 
 	defer func() {
 		err = recovery.HandlePanicWithError(recover(), nil, "worker process encountered error")
@@ -112,8 +118,34 @@ func (p *simpleRateLimited) worker(ctx context.Context, jobs <-chan amboy.Job) {
 			case <-ctx.Done():
 				return
 			case job := <-jobs:
-				job.Run()
+				if job == nil {
+					continue
+				}
+
+				ti := amboy.JobTimeInfo{
+					Start: time.Now(),
+				}
+				job.UpdateTimeInfo(ti)
+
+				runJob(ctx, job)
 				p.queue.Complete(ctx, job)
+
+				ti.End = time.Now()
+				job.UpdateTimeInfo(ti)
+
+				r := message.Fields{
+					"job":           job.ID(),
+					"job_type":      job.Type().Name,
+					"duration_secs": ti.Duration().Seconds(),
+					"queue_type":    fmt.Sprintf("%T", p.queue),
+					"pool":          "rate limiting",
+				}
+
+				if err := job.Error(); err != nil {
+					r["error"] = err.Error()
+				}
+				grip.Debug(r)
+
 				timer.Reset(p.interval)
 			}
 		}
@@ -133,4 +165,5 @@ func (p *simpleRateLimited) Close() {
 	if p.canceler != nil {
 		p.canceler()
 	}
+	p.wg.Wait()
 }

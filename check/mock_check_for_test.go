@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -38,7 +39,7 @@ func init() {
 // with c.setState(), to report success or failure, and optionally add
 // errors with the c.addError(<error>) or messages with the
 // c.setMessage(<message>).
-func (c *MockCheck) Run() {
+func (c *MockCheck) Run(_ context.Context) {
 	// starts/restarts the timer for the task.
 	c.startTask()
 

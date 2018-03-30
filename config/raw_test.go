@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -41,8 +42,8 @@ type mockShellCheck struct {
 	shell *job.ShellJob
 }
 
-func (c *mockShellCheck) Run() {
-	c.shell.Run()
+func (c *mockShellCheck) Run(ctx context.Context) {
+	c.shell.Run(ctx)
 }
 
 // Fixtures

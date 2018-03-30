@@ -48,7 +48,6 @@ func NewBase(checkName string, version int) *Base {
 		Base: &job.Base{
 			JobType: amboy.JobType{
 				Name:    checkName,
-				Format:  amboy.JSON,
 				Version: version,
 			},
 		},

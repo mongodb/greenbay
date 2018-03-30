@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"time"
@@ -94,7 +95,7 @@ func (c *containerCheck) validate() error {
 	return nil
 }
 
-func (c *containerCheck) Run() {
+func (c *containerCheck) Run(_ context.Context) {
 	var failed bool
 	c.startTask()
 	defer c.MarkComplete()

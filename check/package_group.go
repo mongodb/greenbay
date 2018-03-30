@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mongodb/amboy"
@@ -35,7 +36,7 @@ type packageGroup struct {
 	checker      packageChecker
 }
 
-func (c *packageGroup) Run() {
+func (c *packageGroup) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

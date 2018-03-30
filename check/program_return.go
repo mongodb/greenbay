@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"strings"
 
 	"github.com/mongodb/amboy"
@@ -38,7 +39,7 @@ type programReturnCheck struct {
 	compiler compiler
 }
 
-func (c *programReturnCheck) Run() {
+func (c *programReturnCheck) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

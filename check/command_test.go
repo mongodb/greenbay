@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,6 +29,9 @@ func TestCommandCheck(t *testing.T) {
 		},
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	for _, env := range envMaps {
 		for _, wd := range []string{"", "../", "./", "../../"} {
 			for cmd, expected := range checks {
@@ -38,7 +42,7 @@ func TestCommandCheck(t *testing.T) {
 					Environment:      env,
 					Base:             NewBase("cmd", 0),
 				}
-				check.Run()
+				check.Run(ctx)
 				output := check.Output()
 				assert.True(output.Completed)
 				if expected {

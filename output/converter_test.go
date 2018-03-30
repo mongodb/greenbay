@@ -1,6 +1,7 @@
 package output
 
 import (
+	"context"
 	"testing"
 
 	"github.com/mongodb/amboy"
@@ -15,7 +16,7 @@ type mockCheck struct {
 	check.Base
 }
 
-func (c *mockCheck) Run() {
+func (c *mockCheck) Run(_ context.Context) {
 	c.Base.WasSuccessful = true
 	c.Base.MarkComplete()
 	c.hasRun = true

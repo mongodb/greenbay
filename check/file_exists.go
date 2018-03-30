@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -34,7 +35,7 @@ type fileExistance struct {
 	*Base
 }
 
-func (c *fileExistance) Run() {
+func (c *fileExistance) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

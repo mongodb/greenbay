@@ -18,12 +18,13 @@ type Base struct {
 	Time     time.Time      `bson:"time,omitempty" json:"time,omitempty" yaml:"time,omitempty"`
 	Process  string         `bson:"process,omitempty" json:"process,omitempty" yaml:"process,omitempty"`
 	Pid      int            `bson:"pid,omitempty" json:"pid,omitempty" yaml:"pid,omitempty"`
+	Context  Fields         `bson:"context,omitempty" json:"context,omitempty" yaml:"context,omitempty"`
 }
 
 // Collect records the time, process name, and hostname. Useful in the
 // context of a Raw() method.
 func (b *Base) Collect() error {
-	if !b.Time.IsZero() {
+	if b.Pid > 0 {
 		return nil
 	}
 
@@ -53,6 +54,27 @@ func (b *Base) SetPriority(l level.Priority) error {
 	}
 
 	b.Level = l
+
+	return nil
+}
+
+// Annotate makes it possible for callers and senders to add
+// structured data to a message. This may be overridden for some
+// implementations
+func (b *Base) Annotate(key string, value interface{}) error {
+	if b.Context == nil {
+		b.Context = Fields{
+			key: value,
+		}
+
+		return nil
+	}
+
+	if _, ok := b.Context[key]; ok {
+		return fmt.Errorf("key '%s' already exists", key)
+	}
+
+	b.Context[key] = value
 
 	return nil
 }

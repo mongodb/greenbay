@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,7 @@ func (s *PackageGroupSuite) TestInvalidRequirementsLeadsToFailure() {
 	s.check.Requirements.All = true
 	s.check.Requirements.None = true
 	s.Error(s.check.Requirements.Validate())
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 }
 
@@ -43,7 +44,7 @@ func (s *PackageGroupSuite) TestPassingTestWithListOfPackages() {
 	// this passes because the check is rigged to always pass
 	s.check.Packages = []string{"foo", "bar", "baz"}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	s.True(s.check.Output().Passed)
 }
@@ -53,7 +54,7 @@ func (s *PackageGroupSuite) TestFailsWithNoneRequirements() {
 	s.check.Requirements = GroupRequirements{Name: s.check.Name(), None: true}
 	s.check.Packages = []string{"foo", "bar", "baz"}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -63,7 +64,7 @@ func (s *PackageGroupSuite) TestFailedCheckerIdentifiesMissingFunctions() {
 
 	s.check.Packages = []string{"foo", "bar", "baz"}
 
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }

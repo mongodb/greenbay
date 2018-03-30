@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,6 +15,7 @@ func TestPackageCheckImplementation(t *testing.T) {
 	assert := assert.New(t)
 	failer := packageCheckerFactory([]string{"python", "-c", "exit(1)"})
 	passer := packageCheckerFactory([]string{"echo", "foo"})
+	ctx := context.Background()
 
 	// if the check passes, as expected
 	check := &packageInstalled{
@@ -21,7 +23,7 @@ func TestPackageCheckImplementation(t *testing.T) {
 		Base:      NewBase("test", 0),
 		installed: true,
 	}
-	check.Run()
+	check.Run(ctx)
 	assert.NoError(check.Error())
 	assert.True(check.Output().Passed)
 
@@ -31,7 +33,7 @@ func TestPackageCheckImplementation(t *testing.T) {
 		Base:      NewBase("test", 0),
 		installed: false,
 	}
-	check.Run()
+	check.Run(ctx)
 	assert.Error(check.Error())
 	assert.False(check.Output().Passed)
 
@@ -42,7 +44,7 @@ func TestPackageCheckImplementation(t *testing.T) {
 		installed: false,
 	}
 
-	check.Run()
+	check.Run(ctx)
 	assert.NoError(check.Error())
 	assert.True(check.Output().Passed)
 
@@ -52,7 +54,7 @@ func TestPackageCheckImplementation(t *testing.T) {
 		Base:      NewBase("test", 0),
 		installed: true,
 	}
-	check.Run()
+	check.Run(ctx)
 	assert.Error(check.Error())
 	assert.False(check.Output().Passed)
 }

@@ -57,14 +57,14 @@ func (s *SenderSuite) SetupTest() {
 	s.Require().NoError(err)
 
 	s.queue = queue.NewLocalLimitedSize(2, 8)
-	s.queue.Start(ctx)
+	s.NoError(s.queue.Start(ctx))
 
 	s.senders["single-shared"] = MakeQueueSender(s.queue, s.mock)
 	s.senders["multi-shared"] = MakeQueueMultiSender(s.queue, s.mock)
 
 }
 
-func (s *SenderSuite) TeardownTest() {
+func (s *SenderSuite) TearDownTest() {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	amboy.WaitCtxInterval(ctx, s.queue, 100*time.Millisecond)
@@ -79,7 +79,7 @@ func (s *SenderSuite) TeardownTest() {
 	}
 }
 
-func (s *SenderSuite) TeardownSuite() {
+func (s *SenderSuite) TearDownSuite() {
 	for _, sender := range s.senders {
 		s.NoError(sender.Close())
 	}

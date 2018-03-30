@@ -113,7 +113,9 @@ func (m *fieldMessage) setup() {
 
 	_ = m.Collect()
 
-	if _, ok := m.fields["metadata"]; !ok {
+	if b, ok := m.fields["metadata"]; !ok {
+		m.fields["metadata"] = &m.Base
+	} else if _, ok = b.(*Base); ok {
 		m.fields["metadata"] = &m.Base
 	}
 }
@@ -174,3 +176,13 @@ func (m *fieldMessage) String() string {
 }
 
 func (m *fieldMessage) Raw() interface{} { return m.fields }
+
+func (m *fieldMessage) Annotate(key string, value interface{}) error {
+	if _, ok := m.fields[key]; ok {
+		return fmt.Errorf("key '%s' already exists", key)
+	}
+
+	m.fields[key] = value
+
+	return nil
+}

@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestCompileCheckFailsForInvalidCompilerInterfaces(t *testing.T) {
 	assert.Error(comp.Validate())
 	check.compiler = comp
 
-	check.Run()
+	check.Run(context.Background())
 	output := check.Output()
 
 	assert.Error(check.Error())

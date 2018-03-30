@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -34,7 +35,7 @@ type shellGroup struct {
 	*Base        `bson:"metadata" json:"metadata" yaml:"metadata"`
 }
 
-func (c *shellGroup) Run() {
+func (c *shellGroup) Run(ctx context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 
@@ -59,7 +60,7 @@ func (c *shellGroup) Run() {
 			cmd.Base = NewBase(fmt.Sprintf("%s-%d", c.ID(), idx), c.Type().Version)
 		}
 
-		cmd.Run()
+		cmd.Run(ctx)
 
 		result := cmd.Output()
 		if result.Passed {

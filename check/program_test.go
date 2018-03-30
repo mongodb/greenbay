@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestProgramCheckImplementation(t *testing.T) {
 	assert := assert.New(t)
-
+	ctx := context.Background()
 	// the passing case where output matches.
 	check := &programOutputCheck{
 		Base:           NewBase("test", 0),
@@ -18,7 +19,7 @@ func TestProgramCheckImplementation(t *testing.T) {
 		ExpectedOutput: "hello world",
 	}
 
-	check.Run()
+	check.Run(ctx)
 	err := check.Error()
 	assert.NoError(err, fmt.Sprintf("%+v", err))
 	output := check.Output()
@@ -33,7 +34,7 @@ func TestProgramCheckImplementation(t *testing.T) {
 		ExpectedOutput: "hello world???!!!",
 	}
 
-	check.Run()
+	check.Run(ctx)
 	assert.Error(check.Error())
 	output = check.Output()
 	assert.False(output.Passed)
@@ -47,7 +48,7 @@ func TestProgramCheckImplementation(t *testing.T) {
 		ExpectedOutput: "hello world???!!!",
 	}
 
-	check.Run()
+	check.Run(ctx)
 	assert.Error(check.Error())
 	output = check.Output()
 	assert.False(output.Passed)

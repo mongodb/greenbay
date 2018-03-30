@@ -3,6 +3,7 @@ package pool
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/mongodb/amboy"
@@ -47,8 +48,9 @@ func (s *LocalWorkersSuite) SetupTest() {
 func (s *LocalWorkersSuite) TestPanicJobsDoNotPanicHarness() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	wg := &sync.WaitGroup{}
 
-	s.NotPanics(func() { worker(ctx, jobsChanWithPanicingJobs(ctx, s.size), s.queue) })
+	s.NotPanics(func() { worker(ctx, jobsChanWithPanicingJobs(ctx, s.size), s.queue, wg) })
 }
 
 func (s *LocalWorkersSuite) TestConstructedInstanceImplementsInterface() {
@@ -152,12 +154,12 @@ func TestLocalWorkerPoolConstructorDoesNotAllowSizeValuesLessThanOne(t *testing.
 }
 
 func TestPanicJobPanics(t *testing.T) {
-	assert := assert.New(t)
+	assert := assert.New(t) // nolint
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	for j := range jobsChanWithPanicingJobs(ctx, 8) {
-		assert.Panics(func() { j.Run() })
+		assert.Panics(func() { j.Run(ctx) })
 	}
 
 }

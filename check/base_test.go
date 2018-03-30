@@ -63,7 +63,6 @@ func (s *BaseCheckSuite) TestOutputStructGenertedReflectsStateOfBaseObject() {
 			JobType: amboy.JobType{
 				Name:    "base-greenbay-check",
 				Version: 42,
-				Format:  amboy.JSON,
 			},
 		},
 	}

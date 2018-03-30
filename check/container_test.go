@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -51,7 +52,7 @@ func (s *ContainerCheckSuite) TestWithOutHostsDefinedCheckFails() {
 	s.check.Hostnames = []string{}
 	s.Len(s.check.Hostnames, 0)
 	s.Error(s.check.validate())
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -65,7 +66,7 @@ func (s *ContainerCheckSuite) TestDefaultStateOfFixtureValidates() {
 func (s *ContainerCheckSuite) TestWithPassingHostMockTestsSucceed() {
 	// this passes because we've mocked out the host end.
 	s.IsType(passingContainer{}, s.check.container)
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.NoError(s.check.Error())
 	s.True(s.check.Output().Passed)
 }
@@ -73,7 +74,7 @@ func (s *ContainerCheckSuite) TestWithPassingHostMockTestsSucceed() {
 func (s *ContainerCheckSuite) TestWithFailingHostMockTestsFail() {
 	// this passes because we've mocked out the host end.
 	s.check.container = failingContainer{}
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }
@@ -81,7 +82,7 @@ func (s *ContainerCheckSuite) TestWithFailingHostMockTestsFail() {
 func (s *ContainerCheckSuite) TestWithMissingProgramMockTestsFail() {
 	// this passes because we've mocked out the host end.
 	s.check.container = missingPrograms{}
-	s.check.Run()
+	s.check.Run(context.Background())
 	s.Error(s.check.Error())
 	s.False(s.check.Output().Passed)
 }

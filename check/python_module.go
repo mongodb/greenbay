@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -42,16 +43,24 @@ func (c *pythonModuleVersion) validate() error {
 		grip.Debug("no python interpreter specified, using default python from PATH")
 	}
 
+	const (
+		LTE = "lte"
+		GTE = "gte"
+		LT  = "lt"
+		GT  = "gt"
+		EQ  = "eq"
+	)
+
 	switch c.Relationship {
 	case "":
 		if c.MinVersion != "" {
-			c.Relationship = "lte"
+			c.Relationship = LTE
 		} else {
-			c.Relationship = "gte"
+			c.Relationship = GTE
 		}
 
 		grip.Debugf("no relationship specified, using %s", c.Relationship)
-	case "gte", "lte", "lt", "gt", "eq":
+	case GTE, LTE, GT, LT, EQ:
 		grip.Debugln("relationship for '%s' check set to '%s'", c.ID(), c.Relationship)
 	}
 
@@ -59,14 +68,14 @@ func (c *pythonModuleVersion) validate() error {
 	case "":
 		grip.Debug("no min relationship specified, using greater than or equal to (gte)")
 		c.MinRelationship = "gte"
-	case "gte", "lte", "lt", "gt", "eq":
+	case GTE, LTE, LT, GT, EQ:
 		grip.Debugln("relationship for '%s' check set to '%s'", c.ID(), c.MinRelationship)
 	}
 
 	return nil
 }
 
-func (c *pythonModuleVersion) Run() {
+func (c *pythonModuleVersion) Run(_ context.Context) {
 	c.startTask()
 
 	defer c.MarkComplete()

@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"runtime"
 
 	"github.com/mongodb/amboy"
@@ -31,7 +32,7 @@ type limitCheck struct {
 	limitTest limitValueCheck
 }
 
-func (c *limitCheck) Run() {
+func (c *limitCheck) Run(_ context.Context) {
 	c.startTask()
 	defer c.MarkComplete()
 

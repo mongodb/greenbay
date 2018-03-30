@@ -1,6 +1,7 @@
 package check
 
 import (
+	"context"
 	"testing"
 
 	"github.com/mongodb/amboy/registry"
@@ -23,6 +24,8 @@ func TestFileExistsCheckImplementation(t *testing.T) {
 	assert := assert.New(t)   // nolint
 	require := require.New(t) // nolint
 	checkFactory := fileExistsFactoryFactory("file-exists", require)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	var check *fileExistance
 	var output greenbay.CheckOutput
@@ -30,7 +33,7 @@ func TestFileExistsCheckImplementation(t *testing.T) {
 	// make sure it can find files that do exist
 	check = checkFactory()
 	check.FileName = "makefile"
-	check.Run()
+	check.Run(ctx)
 	output = check.Output()
 
 	assert.True(output.Completed)
@@ -41,7 +44,7 @@ func TestFileExistsCheckImplementation(t *testing.T) {
 	// make sure it doesn't find files that don't exist
 	check = checkFactory()
 	check.FileName = "../makefile.DOES-NOT-EXIST"
-	check.Run()
+	check.Run(ctx)
 	output = check.Output()
 
 	assert.True(output.Completed)
@@ -54,6 +57,8 @@ func TestFileDoesNotExistCheckImplementation(t *testing.T) {
 	assert := assert.New(t)   // nolint
 	require := require.New(t) // nolint
 	checkFactory := fileExistsFactoryFactory("file-does-not-exist", require)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	var check *fileExistance
 	var output greenbay.CheckOutput
@@ -61,7 +66,7 @@ func TestFileDoesNotExistCheckImplementation(t *testing.T) {
 	// make sure that files that don't exist pass
 	check = checkFactory()
 	check.FileName = "../makefile.DOES-NOT-EXIST"
-	check.Run()
+	check.Run(ctx)
 	output = check.Output()
 
 	assert.True(output.Completed)
@@ -72,7 +77,7 @@ func TestFileDoesNotExistCheckImplementation(t *testing.T) {
 	// make sure files that exist fail
 	check = checkFactory()
 	check.FileName = "makefile"
-	check.Run()
+	check.Run(ctx)
 	output = check.Output()
 
 	assert.True(output.Completed)
